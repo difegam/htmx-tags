@@ -2,16 +2,19 @@
 
 ## Current release baseline
 
-- package version in `package.json`: `0.0.7`
-- generator source htmx version in `build-data.py`: `1.9.6`
+- package version in `package.json`: `0.1.1`
+- generator source htmx version in `build-data.py`: `2.0.9`
 
 ## Release checklist
 
 1. Update `package.json` version
-1. Review whether `HTMX_VERSION` should be updated
-1. Regenerate `html.htmx-data.json` when generator or source version changes
-1. Verify extension behavior in VS Code
-1. Prepare release notes and publish
+1. Review whether `DEFAULT_HTMX_VERSION` in `build-data.py` should be updated
+1. Regenerate `html.htmx-data.json` when generator or source version changes (`just build-data`)
+1. Run all local checks (`just check`)
+1. Compile TypeScript (`npm run compile`)
+1. Verify extension behavior in VS Code (see smoke test below)
+1. Package the extension (`npx @vscode/vsce package`)
+1. Prepare release notes and publish (`npx @vscode/vsce publish`)
 
 ## Recommended smoke test
 

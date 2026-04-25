@@ -4,9 +4,18 @@
 
 Check:
 
-- file language mode is **HTML**
+- file language mode is **HTML** or **Django HTML**
 - extension is installed/enabled
 - `package.json` still points to `./html.htmx-data.json`
+
+## No autocomplete in Django templates
+
+The extension activates on `django-html` files but requires `batisteo.vscode-django` to be
+installed (declared as an extension dependency). Check:
+
+- `batisteo.vscode-django` is installed and enabled
+- file language mode is set to **Django HTML** (shown in the status bar)
+- reload VS Code after installing either extension
 
 ## Hover docs missing
 
@@ -18,7 +27,7 @@ Possible causes:
 
 Actions:
 
-1. regenerate with `python3 build-data.py`
+1. regenerate with `just build-data`
 1. inspect JSON for obvious corruption
 1. run **Developer: Reload Window** in VS Code
 
@@ -47,12 +56,5 @@ Check:
 Try:
 
 ```bash
-zensical serve
-```
-
-or with uv/Poetry wrappers:
-
-```bash
 uv run zensical serve
-poetry run zensical serve
 ```

@@ -6,16 +6,17 @@ This documentation is for maintainers and contributors of the `htmx-tags` VS Cod
 
 As currently implemented in this repository:
 
-- Extension package name: `htmx-tags`
-- Published version: `0.0.7`
-- VS Code engine requirement: `^1.63.0`
-- htmx docs source used by generator: `v1.9.6`
+- Extension package name: `htmx-tags-django`
+- Published version: `0.1.1`
+- VS Code engine requirement: `^1.90.0`
+- htmx docs source used by generator: `2.0.9`
 - Runtime model: static JSON custom data consumed by VS Code HTML features
 
 ## What the extension does
 
 - contributes htmx attributes as HTML custom data
-- provides autocomplete and hover descriptions in HTML files
+- provides autocomplete and hover descriptions in HTML and Django template files
+- activates on `html` and `django-html` language files; requires `batisteo.vscode-django` for Django support
 - links attributes to official `https://htmx.org/attributes/<name>/` reference pages
 
 ## Repository map

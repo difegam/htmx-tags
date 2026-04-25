@@ -22,10 +22,11 @@ Defines extension metadata and registers the custom data source:
 
 Generator script that:
 
-- pins upstream source version (`HTMX_VERSION = "1.9.6"`)
+- pins upstream source version (`DEFAULT_HTMX_VERSION = "2.0.9"`)
 - downloads htmx tag archive from GitHub
 - collects attribute markdown content
 - builds VS Code custom data JSON structure
+- applies HTMX 2.x compatibility adjustments (see below)
 - persists output to `html.htmx-data.json`
 
 ### `html.htmx-data.json`
@@ -35,6 +36,14 @@ Runtime artifact used directly by VS Code. It contains:
 - `globalAttributes`: all supported `hx-*` attributes and docs
 - `valueSets`: currently includes predefined values for `hx-swap`
 
+### HTMX 2.x adjustments
+
+When the configured version is `>= 2.0.0`, `apply_htmx_v2_adjustments()` is called after the
+base payload is built. It:
+
+- removes `hx-sse` and `hx-ws` (deprecated and removed in HTMX 2.x)
+- adds `hx-on:*` and `hx-on::*` wildcard entries for the new event handler syntax
+
 ## Design decisions
 
 - **Static artifact at runtime**: eliminates extension runtime network dependencies
@@ -43,6 +52,4 @@ Runtime artifact used directly by VS Code. It contains:
 
 ## Known limitations
 
-- generator is currently a single script (not modular/tested)
-- no automated drift detection in CI
-- reference label typo (`Official documention`) originates from generator output
+- no automated drift detection in CI to flag when upstream HTMX docs change

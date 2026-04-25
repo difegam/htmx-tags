@@ -1,21 +1,14 @@
 [project]
 name = "htmx-tags-tools"
-version = "0.1.0"
+version = "0.1.1"
 description = "Developer tooling for htmx-tags"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["packaging>=24"]
 
 [dependency-groups]
-dev = [
-  "prek>=0.3.8",
-  "pytest>=8.3.0",
-  "ruff>=0.15.0",
-  "ty>=0.0.1a10",
-]
-docs = [
-    "zensical>=0.0.36",
-]
+dev = ["prek>=0.3.8", "pytest>=8.3.0", "ruff>=0.15.0", "ty>=0.0.1a10"]
+docs = ["zensical>=0.0.36"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
