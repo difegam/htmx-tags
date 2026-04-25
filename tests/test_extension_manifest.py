@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_JSON_PATH = ROOT / "package.json"
 CUSTOM_DATA_PATH = ROOT / "html.htmx-data.json"

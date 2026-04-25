@@ -6,17 +6,22 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 import zipfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 from urllib.request import urlopen
+
+from packaging import version
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_HTMX_VERSION = "2.0.9"
 DEFAULT_OUTPUT_FILE = Path("html.htmx-data.json")
 REMOVED_IN_HTMX_V2 = {"hx-sse", "hx-ws"}
+FRONT_MATTER_PATTERN = re.compile(r"^\s*\+\+\+\s*\n.*?\n\+\+\+\s*(?:\n|$)", re.DOTALL)
 
 
 def build_base_payload() -> dict[str, Any]:
@@ -36,13 +41,34 @@ def build_base_payload() -> dict[str, Any]:
             {
                 "name": "swap",
                 "values": [
-                    {"name": "innerHTML", "description": "The default, puts the content inside the target element"},
-                    {"name": "outerHTML", "description": "Replaces the entire target element with the returned content"},
-                    {"name": "afterbegin", "description": "Prepends the content before the first child inside the target"},
-                    {"name": "beforebegin", "description": "Prepends the content before the target in the targets parent element"},
-                    {"name": "beforeend", "description": "Appends the content after the last child inside the target"},
-                    {"name": "afterend", "description": "Appends the content after the target in the targets parent element"},
-                    {"name": "delete", "description": "Deletes the target element regardless of the response"},
+                    {
+                        "name": "innerHTML",
+                        "description": "The default, puts the content inside the target element",
+                    },
+                    {
+                        "name": "outerHTML",
+                        "description": "Replaces the entire target element with the returned content",
+                    },
+                    {
+                        "name": "afterbegin",
+                        "description": "Prepends the content before the first child inside the target",
+                    },
+                    {
+                        "name": "beforebegin",
+                        "description": "Prepends the content before the target in the targets parent element",
+                    },
+                    {
+                        "name": "beforeend",
+                        "description": "Appends the content after the last child inside the target",
+                    },
+                    {
+                        "name": "afterend",
+                        "description": "Appends the content after the target in the targets parent element",
+                    },
+                    {
+                        "name": "delete",
+                        "description": "Deletes the target element regardless of the response",
+                    },
                     {
                         "name": "none",
                         "description": "Does not append content from response (Out of Band Swaps and Response Headers will still be processed)",
@@ -66,9 +92,14 @@ def fetch_zip_content(zip_url: str) -> bytes:
     Raises:
         RuntimeError: If the HTTP response status is not 200, if the server returns an HTTP error, or if the URL cannot be reached.
     """
+    parsed_url = urlparse(zip_url)
+    if parsed_url.scheme != "https":
+        msg = f"Invalid archive URL scheme '{parsed_url.scheme}'. Expected 'https'."
+        raise ValueError(msg)
+
     LOGGER.info("Downloading htmx docs archive: %s", zip_url)
     try:
-        with urlopen(zip_url) as response:
+        with urlopen(zip_url, timeout=10) as response:
             if response.status != 200:
                 msg = f"Unexpected status code: {response.status}"
                 raise RuntimeError(msg)
@@ -93,11 +124,10 @@ def strip_front_matter(markdown: str) -> str:
     Returns:
         str: The Markdown content with the front matter removed and leading/trailing whitespace stripped.
     """
-    first = markdown.find("+++")
-    second = markdown.find("+++", first + 3)
-    if first == -1 or second == -1:
+    match = FRONT_MATTER_PATTERN.match(markdown)
+    if match is None:
         return markdown.strip()
-    return markdown[second + 3 :].strip()
+    return markdown[match.end() :].strip()
 
 
 def iter_attribute_docs(zip_bytes: bytes) -> list[tuple[str, str]]:
@@ -111,18 +141,22 @@ def iter_attribute_docs(zip_bytes: bytes) -> list[tuple[str, str]]:
         list[tuple[str, str]]: A list of (attribute_name, markdown) tuples where each markdown has TOML front matter removed; the list is sorted by attribute_name.
     """
     attributes: list[tuple[str, str]] = []
-    with zipfile.ZipFile(BytesIO(zip_bytes)) as zip_fd:
-        for zip_info in zip_fd.infolist():
-            if not (
-                zip_info.filename.endswith(".md")
-                and "/www/content/attributes/" in zip_info.filename
-                and "_index" not in zip_info.filename
-            ):
-                continue
+    try:
+        with zipfile.ZipFile(BytesIO(zip_bytes)) as zip_fd:
+            for zip_info in zip_fd.infolist():
+                if not (
+                    zip_info.filename.endswith(".md")
+                    and "/www/content/attributes/" in zip_info.filename
+                    and "_index" not in zip_info.filename
+                ):
+                    continue
 
-            attribute = Path(zip_info.filename).stem
-            attribute_doc = zip_fd.read(zip_info).decode()
-            attributes.append((attribute, strip_front_matter(attribute_doc)))
+                attribute = Path(zip_info.filename).stem
+                attribute_doc = zip_fd.read(zip_info).decode()
+                attributes.append((attribute, strip_front_matter(attribute_doc)))
+    except zipfile.BadZipFile as exc:
+        msg = f"invalid ZIP payload when parsing attributes bundle ({len(zip_bytes)} bytes): {exc}"
+        raise RuntimeError(msg) from exc
 
     return sorted(attributes, key=lambda item: item[0])
 
@@ -147,12 +181,16 @@ def apply_htmx_v2_adjustments(payload: dict[str, Any]) -> dict[str, Any]:
         {
             "name": "hx-on:*",
             "description": "HTMX 2.x event handler syntax using `hx-on:<event-name>` (for example `hx-on:click`).",
-            "references": [{"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}],
+            "references": [
+                {"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}
+            ],
         },
         {
             "name": "hx-on::*",
             "description": "HTMX shorthand syntax for internal events using `hx-on::<event-name>`, such as `hx-on::before-request`.",
-            "references": [{"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}],
+            "references": [
+                {"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}
+            ],
         },
     ]
 
@@ -191,12 +229,15 @@ def build_payload(htmx_version: str) -> dict[str, Any]:
                 }
             ],
         }
-        if attribute in documented_value_sets:
-            entry["valueSet"] = attribute
+        base = attribute.removeprefix("hx-")
+        if base in documented_value_sets:
+            entry["valueSet"] = base
 
         payload["globalAttributes"].append(entry)
 
-    return apply_htmx_v2_adjustments(payload)
+    if version.parse(htmx_version) >= version.parse("2.0.0"):
+        return apply_htmx_v2_adjustments(payload)
+    return payload
 
 
 def parse_args() -> argparse.Namespace:

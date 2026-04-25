@@ -41,8 +41,8 @@
     "compile": "tsc -p ./",
     "lint": "eslint .",
     "check-types": "tsc -p ./ --noEmit",
-    "build-data": "python build-data.py",
-    "test": "pytest -q"
+    "build-data": "uv run python build-data.py",
+    "test": "uv run pytest -q"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",

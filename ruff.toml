@@ -1,10 +1,15 @@
 line-length = 100
 indent-width = 4
 target-version = "py312"
+extend-exclude = [".venv", "logs", "__pycache__", "build", "dist"]
 
 [lint]
 select = ["E", "F", "I", "UP", "B", "PTH"]
+fixable = ["ALL"]
 
 [format]
 quote-style = "double"
 indent-style = "space"
+
+[lint.per-file-ignores]
+"build-data.py" = ["E501"]
