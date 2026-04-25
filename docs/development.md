@@ -9,10 +9,10 @@
 ## Core workflow
 
 1. Change generator logic in `build-data.py` (if required)
-2. Regenerate custom data (`python3 build-data.py`)
-3. Review `html.htmx-data.json` diff
-4. Smoke test autocompletion + hover docs in VS Code
-5. Commit script changes and generated artifact together
+1. Regenerate custom data (`python3 build-data.py`)
+1. Review `html.htmx-data.json` diff
+1. Smoke test autocompletion + hover docs in VS Code
+1. Commit script changes and generated artifact together
 
 ## Data regeneration
 

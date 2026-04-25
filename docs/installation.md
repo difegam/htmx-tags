@@ -5,18 +5,18 @@
 ### Marketplace install
 
 1. Open VS Code
-2. Open **Extensions** (`Ctrl/Cmd+Shift+X`)
-3. Search for `htmx-tags`
-4. Click **Install**
+1. Open **Extensions** (`Ctrl/Cmd+Shift+X`)
+1. Search for `htmx-tags`
+1. Click **Install**
 
 Direct link: <https://marketplace.visualstudio.com/items?itemName=otovo-oss.htmx-tags>
 
 ## Verify extension behavior
 
 1. Open any `.html` file
-2. Type `hx-` within an element
-3. Confirm attribute suggestions appear
-4. Hover an `hx-*` attribute and confirm docs render
+1. Type `hx-` within an element
+1. Confirm attribute suggestions appear
+1. Hover an `hx-*` attribute and confirm docs render
 
 ## Local documentation setup (Zensical)
 

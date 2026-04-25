@@ -19,8 +19,8 @@ Possible causes:
 Actions:
 
 1. regenerate with `python3 build-data.py`
-2. inspect JSON for obvious corruption
-3. run **Developer: Reload Window** in VS Code
+1. inspect JSON for obvious corruption
+1. run **Developer: Reload Window** in VS Code
 
 ## Data regeneration fails
 
@@ -33,8 +33,8 @@ Likely causes:
 Actions:
 
 1. verify internet connectivity
-2. confirm htmx tag exists upstream
-3. update extraction path conditions in generator
+1. confirm htmx tag exists upstream
+1. update extraction path conditions in generator
 
 ## Docs site won't start
 
