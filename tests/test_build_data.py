@@ -38,6 +38,42 @@ def test_fetch_zip_content_wraps_url_errors(monkeypatch: pytest.MonkeyPatch) -> 
         module.fetch_zip_content("https://example.com/archive.zip")
 
 
+def test_strip_front_matter_removes_leading_toml_block() -> None:
+    module = _load_build_data_module()
+
+    markdown = """
+
++++
+title = "hx-get"
+description = "Docs"
++++
+
+# hx-get
+Fetch content.
+"""
+
+    assert module.strip_front_matter(markdown) == "# hx-get\nFetch content."
+
+
+def test_strip_front_matter_preserves_inline_plus_sequences() -> None:
+    module = _load_build_data_module()
+
+    markdown = "A literal +++ marker inside content should stay untouched."
+
+    assert module.strip_front_matter(markdown) == markdown
+
+
+def test_strip_front_matter_ignores_malformed_delimiters() -> None:
+    module = _load_build_data_module()
+
+    markdown = """+++
+title = "hx-get"
+This is not a closing delimiter.
+"""
+
+    assert module.strip_front_matter(markdown) == markdown.strip()
+
+
 def test_apply_htmx_v2_adjustments_removes_old_extensions_and_adds_hx_on() -> None:
     module = _load_build_data_module()
 

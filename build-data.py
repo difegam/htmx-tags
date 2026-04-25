@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -20,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 DEFAULT_HTMX_VERSION = "2.0.9"
 DEFAULT_OUTPUT_FILE = Path("html.htmx-data.json")
 REMOVED_IN_HTMX_V2 = {"hx-sse", "hx-ws"}
+FRONT_MATTER_PATTERN = re.compile(r"^\s*\+\+\+\s*\n.*?\n\+\+\+\s*(?:\n|$)", re.DOTALL)
 
 
 def build_base_payload() -> dict[str, Any]:
@@ -94,11 +96,10 @@ def fetch_zip_content(zip_url: str) -> bytes:
 
 def strip_front_matter(markdown: str) -> str:
     """Strip TOML front matter from HTMX markdown files."""
-    first = markdown.find("+++")
-    second = markdown.find("+++", first + 3)
-    if first == -1 or second == -1:
+    match = FRONT_MATTER_PATTERN.match(markdown)
+    if match is None:
         return markdown.strip()
-    return markdown[second + 3 :].strip()
+    return markdown[match.end() :].strip()
 
 
 def iter_attribute_docs(zip_bytes: bytes) -> list[tuple[str, str]]:
