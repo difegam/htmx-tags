@@ -34,8 +34,11 @@ wheels = [
 
 [[package]]
 name = "htmx-tags-tools"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "." }
+dependencies = [
+    { name = "packaging" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -49,6 +52,7 @@ docs = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "packaging", specifier = ">=24" }]
 
 [package.metadata.requires-dev]
 dev = [

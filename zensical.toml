@@ -1,16 +1,16 @@
 [project]
-site_name = "htmx-tags"
-site_description = "Documentation for the htmx-tags VS Code extension"
-site_url = "https://github.com/otovo/htmx-tags"
-repo_url = "https://github.com/otovo/htmx-tags"
+site_name = "htmx-tags-django"
+site_description = "Documentation for the htmx-tags Django VS Code extension"
+site_url = "https://github.com/difegam/htmx-tags"
+repo_url = "https://github.com/difegam/htmx-tags"
 docs_dir = "docs"
 nav = [
-  {"Overview" = "index.md"},
-  {"Installation" = "installation.md"},
-  {"Development" = "development.md"},
-  {"Architecture" = "architecture.md"},
-  {"Release" = "release.md"},
-  {"Troubleshooting" = "troubleshooting.md"}
+    { "Overview" = "index.md" },
+    { "Installation" = "installation.md" },
+    { "Development" = "development.md" },
+    { "Architecture" = "architecture.md" },
+    { "Release" = "release.md" },
+    { "Troubleshooting" = "troubleshooting.md" },
 ]
 
 [project.theme]

@@ -17,7 +17,7 @@
 ## Data regeneration
 
 ```bash
-python3 build-data.py
+just build-data
 ```
 
 The generator will:
@@ -118,7 +118,5 @@ inside VS Code instead of the terminal.
 
 ## Suggested technical backlog
 
-- convert `build-data.py` into a typed module with testable functions
-- add `pyproject.toml` for consistent Python tooling (uv/Poetry friendly)
-- add CI checks for formatting/linting and generation drift
-- add tests validating expected output schema and key attributes
+- add CI drift detection to flag when upstream HTMX docs change between releases
+- add CI checks for generation drift (regenerate and diff in CI)
