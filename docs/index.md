@@ -10,7 +10,7 @@ As currently implemented in this repository:
 - Published version: `0.0.7`
 - VS Code engine requirement: `^1.63.0`
 - htmx docs source used by generator: `v1.9.6`
-- Runtime model: static JSON custom data consumed by VS Code HTML language features
+- Runtime model: static JSON custom data consumed by VS Code HTML features
 
 ## What the extension does
 
