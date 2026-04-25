@@ -41,8 +41,10 @@ If release quality is unacceptable:
 This repository includes a Pages workflow at `.github/workflows/docs.yml` that:
 
 1. runs on push to `main` (and manual dispatch)
-1. installs Python 3.12 and `uv`
-1. builds docs with `zensical build --clean --strict`
+1. installs Python 3.12 and `uv` (pinned in CI)
+1. restores/saves `uv` cache using `uv.lock`
+1. installs docs dependencies from `[dependency-groups.docs]`
+1. builds docs with `uv run zensical build --clean --strict`
 1. uploads `site/` and deploys with `actions/deploy-pages`
 
 If deployment fails, inspect the **Documentation** workflow run in GitHub Actions first.

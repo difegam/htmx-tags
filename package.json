@@ -1,5 +1,5 @@
 {
-  "name": "htmx-tags-difegam",
+  "name": "htmx-tags-django",
   "displayName": "htmx-tags-django",
   "description": "HTMX attribute completion and hover docs for HTML and Django templates in VS Code.",
   "version": "0.1.1",

@@ -1,53 +1,57 @@
 name: Documentation
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+    contents: read
+    pages: write
+    id-token: write
 
 concurrency:
-  group: docs-${{ github.ref }}
-  cancel-in-progress: true
+    group: docs-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  deploy:
-    name: Build and deploy docs
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+    deploy:
+        name: Build and deploy docs
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - name: Configure Pages
+              uses: actions/configure-pages@v5
 
-      - name: Checkout
-        uses: actions/checkout@v5
+            - name: Checkout
+              uses: actions/checkout@v5
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+            - name: Setup Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
+            - name: Install uv
+              uses: astral-sh/setup-uv@v7
+              with:
+                  version: "0.11.7"
+                  enable-cache: true
+                  cache-dependency-glob: uv.lock
 
-      - name: Install zensical
-        run: uv tool install zensical
+            - name: Install docs dependencies
+              run: uv sync --frozen --no-dev --group docs
 
-      - name: Build docs
-        run: uvx zensical build --clean --strict
+            - name: Build docs
+              run: uv run zensical build --clean --strict
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v4
+              with:
+                  path: site
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
