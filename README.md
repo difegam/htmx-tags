@@ -1,38 +1,68 @@
+# htmx-tags (Difegam fork)
 
-# htmx-Tags
-
-htmx-Tags is a VSCode extension that provides autocompletion of htmx attributes and inline documentation for these attributes. The documentation for the attributes are fetched and parsed from the official documentation.
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/difegam/htmx-tags?utm_source=oss&utm_medium=github&utm_campaign=difegam%2Fhtmx-tags&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 
-## Installation
-
-You can install the `htmx-tags` extension from the Visual Studio Code Marketplace or by searching for "htmx-tags" within the VSCode extension panel.
-Usage
-
-After installing the extension, simply start typing an htmx attribute within an HTML tag and the extension will provide autocompletion suggestions based on the official htmx documentation.
-
-Additionally, you can hover over an htmx attribute to see inline documentation within your code editor.
+`htmx-tags` is a VS Code extension that provides autocompletion and hover documentation for HTMX attributes.
 
 ## Features
 
-* Autocompletion of htmx attributes
-* Inline documentation for htmx attributes
+- HTMX attribute completion in HTML files.
+- HTMX hover documentation based on upstream `htmx.org` attribute pages.
+- Django template support via `django-html` activation and dependency on the Django extension.
 
-## Screenshots
+## HTMX 2.x compatibility updates
 
-![Attribute completion](demo-1.png)
+Aligned with the HTMX 2.0 release guidance:
 
-![Inline documentation](demo-2.png)
+- Removed deprecated `hx-sse` and `hx-ws` from custom attribute data.
+- Added wildcard `hx-on` autocomplete entries for `hx-on:*` and `hx-on::*` syntax.
+- Kept docs generation targeting HTMX `2.0.9` by default in `build-data.py`.
 
-## Contributions
+## Django template support
 
-Contributions to the htmx-Tags extension are welcome!
+This extension is validated to support Django templates by:
 
-If you would like to contribute, please submit a pull request or open an issue on the GitHub repository.
+- Activating on `django-html` language files.
+- Declaring `batisteo.vscode-django` as an extension dependency.
+- Running automated tests that verify both settings.
 
+## Development
+
+### Tooling
+
+This repository uses modern, update-friendly tooling:
+
+- **TypeScript** for extension scaffold and strict compile checks.
+- **uv** for Python dependency and environment management.
+- **prek** for pre-commit/pre-push hook orchestration.
+- **just** recipes for repeatable local commands.
+- **GitHub Actions** for CI checks.
+
+### Quick start
+
+```bash
+just init
+just check
+```
+
+### Regenerate custom HTMX data
+
+```bash
+just build-data
+```
+
+or directly:
+
+```bash
+uv run python build-data.py --htmx-version 2.0.9
+```
 
 ## License
 
-htmx-Tags is licensed under the Apache 2 License. See the LICENSE file for more information.
+`htmx-tags` is licensed under the Apache 2.0 License. See `LICENSE.txt`.
 
-The htmx documentation is licensed under the BSD 2-clause license.
+## Credits
+
+This package is maintained at `difegam/htmx-tags` and is a community fork of the original `otovo/htmx-tags` project.
+All credit for the original idea, data model, and initial implementation goes to the original maintainers and contributors.

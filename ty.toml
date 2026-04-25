@@ -1,0 +1,9 @@
+[environment]
+python-version = "3.12"
+python = ".venv"
+root = ["."]
+
+[src]
+include = ["build-data.py", "tests"]
+exclude = [".venv", "__pycache__", "out"]
+respect-ignore-files = true

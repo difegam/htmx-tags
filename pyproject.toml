@@ -1,0 +1,19 @@
+[project]
+name = "htmx-tags-tools"
+version = "0.1.0"
+description = "Developer tooling for htmx-tags"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "prek>=0.3.8",
+  "pytest>=8.3.0",
+  "ruff>=0.15.0",
+  "ty>=0.0.1a10",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

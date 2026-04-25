@@ -1,17 +1,58 @@
 {
-	"name": "htmx-tags",
-	"description": "Provides HTMX tag completion in HTML files in VSCode",
-	"version": "0.0.7",
-	"publisher": "otovo-oss",
-	"repository": "https://github.com/otovo/htmx-tags",
-	"engines": {
-		"vscode": "^1.63.0"
-	},
-	"contributes": {
-		"html": {
-			"customData": [
-				"./html.htmx-data.json"
-			]
-		}
-	}
+  "name": "htmx-tags-difegam",
+  "displayName": "htmx-tags-django",
+  "description": "HTMX attribute completion and hover docs for HTML and Django templates in VS Code.",
+  "version": "0.1.1",
+  "publisher": "difegam",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/difegam/htmx-tags"
+  },
+  "homepage": "https://github.com/difegam/htmx-tags",
+  "bugs": {
+    "url": "https://github.com/difegam/htmx-tags/issues"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "htmx",
+    "html",
+    "django",
+    "templates"
+  ],
+  "activationEvents": [
+    "onLanguage:html",
+    "onLanguage:django-html"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "html": {
+      "customData": [
+        "./html.htmx-data.json"
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "lint": "eslint .",
+    "check-types": "tsc -p ./ --noEmit",
+    "build-data": "uv run python build-data.py",
+    "test": "uv run pytest -q"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/vscode": "^1.90.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.26.0",
+    "typescript": "^5.8.3"
+  },
+  "extensionDependencies": [
+    "batisteo.vscode-django"
+  ]
 }
