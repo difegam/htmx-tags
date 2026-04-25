@@ -74,6 +74,17 @@ This is not a closing delimiter.
     assert module.strip_front_matter(markdown) == markdown.strip()
 
 
+def test_iter_attribute_docs_wraps_bad_zip_errors() -> None:
+    module = _load_build_data_module()
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"invalid ZIP payload when parsing attributes bundle \(14 bytes\):"
+        r" File is not a zip file",
+    ):
+        module.iter_attribute_docs(b"not a zip file")
+
+
 def test_apply_htmx_v2_adjustments_removes_old_extensions_and_adds_hx_on() -> None:
     module = _load_build_data_module()
 

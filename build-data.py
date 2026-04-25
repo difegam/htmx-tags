@@ -105,18 +105,22 @@ def strip_front_matter(markdown: str) -> str:
 def iter_attribute_docs(zip_bytes: bytes) -> list[tuple[str, str]]:
     """Extract (attribute_name, markdown_doc) tuples from the HTMX docs archive."""
     attributes: list[tuple[str, str]] = []
-    with zipfile.ZipFile(BytesIO(zip_bytes)) as zip_fd:
-        for zip_info in zip_fd.infolist():
-            if not (
-                zip_info.filename.endswith(".md")
-                and "/www/content/attributes/" in zip_info.filename
-                and "_index" not in zip_info.filename
-            ):
-                continue
+    try:
+        with zipfile.ZipFile(BytesIO(zip_bytes)) as zip_fd:
+            for zip_info in zip_fd.infolist():
+                if not (
+                    zip_info.filename.endswith(".md")
+                    and "/www/content/attributes/" in zip_info.filename
+                    and "_index" not in zip_info.filename
+                ):
+                    continue
 
-            attribute = Path(zip_info.filename).stem
-            attribute_doc = zip_fd.read(zip_info).decode()
-            attributes.append((attribute, strip_front_matter(attribute_doc)))
+                attribute = Path(zip_info.filename).stem
+                attribute_doc = zip_fd.read(zip_info).decode()
+                attributes.append((attribute, strip_front_matter(attribute_doc)))
+    except zipfile.BadZipFile as exc:
+        msg = f"invalid ZIP payload when parsing attributes bundle ({len(zip_bytes)} bytes): {exc}"
+        raise RuntimeError(msg) from exc
 
     return sorted(attributes, key=lambda item: item[0])
 
@@ -171,8 +175,9 @@ def build_payload(htmx_version: str) -> dict[str, Any]:
                 }
             ],
         }
-        if attribute in documented_value_sets:
-            entry["valueSet"] = attribute
+        base = attribute.removeprefix("hx-")
+        if base in documented_value_sets:
+            entry["valueSet"] = base
 
         payload["globalAttributes"].append(entry)
 
