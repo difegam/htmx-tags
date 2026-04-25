@@ -1,0 +1,53 @@
+minimum_prek_version = "0.3.8"
+default_install_hook_types = ["pre-commit", "pre-push"]
+default_language_version.python = "3.12"
+exclude = "^(\\.venv|out|dist|build)/"
+
+[[repos]]
+repo = "builtin"
+
+[[repos.hooks]]
+id = "trailing-whitespace"
+name = "trim trailing whitespace"
+args = ["--markdown-linebreak-ext=md"]
+
+[[repos.hooks]]
+id = "end-of-file-fixer"
+name = "ensure newline at end of file"
+
+[[repos.hooks]]
+id = "check-json"
+name = "validate JSON syntax"
+
+[[repos.hooks]]
+id = "check-yaml"
+name = "validate YAML syntax"
+
+[[repos.hooks]]
+id = "check-toml"
+name = "validate TOML syntax"
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.15.0"
+
+[[repos.hooks]]
+id = "ruff-check"
+name = "lint Python"
+args = ["--fix", "--config=./ruff.toml"]
+
+[[repos.hooks]]
+id = "ruff-format"
+name = "format Python"
+args = ["--config=./ruff.toml"]
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "pytest"
+name = "run tests"
+entry = "uv run pytest"
+language = "system"
+pass_filenames = false
+stages = ["pre-push", "manual"]

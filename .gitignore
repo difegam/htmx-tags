@@ -1,6 +1,8 @@
-out
-dist
-node_modules
-.vscode-test/
-*.vsix
-.vscode
+node_modules/
+out/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.ty_cache/
+.DS_Store
+__pycache__/
