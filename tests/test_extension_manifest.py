@@ -12,6 +12,15 @@ CUSTOM_DATA_PATH = ROOT / "html.htmx-data.json"
 
 
 def _read_json(path: Path) -> dict:
+    """
+    Read and parse a JSON file from the given filesystem path.
+    
+    Parameters:
+        path (Path): Filesystem path to the JSON file to read.
+    
+    Returns:
+        dict: The parsed JSON object.
+    """
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -22,6 +31,11 @@ def test_html_custom_data_is_registered() -> None:
 
 
 def test_django_support_is_declared() -> None:
+    """
+    Verify the extension declares Django support in its package manifest.
+    
+    Checks that the package manifest registers the Django HTML language activation event "onLanguage:django-html" and lists "batisteo.vscode-django" among its extension dependencies.
+    """
     manifest = _read_json(PACKAGE_JSON_PATH)
     activation_events: list[str] = manifest["activationEvents"]
     dependencies: list[str] = manifest["extensionDependencies"]
@@ -38,12 +52,23 @@ def test_custom_data_schema_shape() -> None:
 
 
 def test_references_use_correct_spelling() -> None:
+    """
+    Validate that every global attribute's first reference is titled "Official documentation".
+    
+    This test loads the HTML custom data and asserts for each entry in `globalAttributes` that
+    `attribute["references"][0]["name"]` equals "Official documentation".
+    """
     data = _read_json(CUSTOM_DATA_PATH)
     for attribute in data["globalAttributes"]:
         assert attribute["references"][0]["name"] == "Official documentation"
 
 
 def test_htmx_2_removed_attributes_are_excluded() -> None:
+    """
+    Verify that HTMX 2 attributes removed from the specification are not present in the custom data.
+    
+    Asserts that "hx-sse" and "hx-ws" do not appear among the file's global attribute names.
+    """
     data = _read_json(CUSTOM_DATA_PATH)
     attribute_names = {attribute["name"] for attribute in data["globalAttributes"]}
 
@@ -52,6 +77,11 @@ def test_htmx_2_removed_attributes_are_excluded() -> None:
 
 
 def test_htmx_2_hx_on_wildcards_are_present() -> None:
+    """
+    Check that HTMX v2 wildcard attributes "hx-on:*" and "hx-on::*" are present in the custom HTML data's globalAttributes.
+    
+    Asserts that the attribute names defined in html.htmx-data.json include "hx-on:*" and "hx-on::*".
+    """
     data = _read_json(CUSTOM_DATA_PATH)
     attribute_names = {attribute["name"] for attribute in data["globalAttributes"]}
 

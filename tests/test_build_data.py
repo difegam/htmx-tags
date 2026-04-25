@@ -10,6 +10,17 @@ import pytest
 
 
 def _load_build_data_module():
+    """
+    Load the repository's top-level build-data.py as an importable module.
+    
+    Attempts to locate and execute build-data.py from the repository root and returns the loaded module object.
+    
+    Returns:
+        module: The imported build-data module.
+    
+    Raises:
+        RuntimeError: If the import spec or loader cannot be created for build-data.py.
+    """
     root = Path(__file__).resolve().parent.parent
     module_path = root / "build-data.py"
     spec = importlib.util.spec_from_file_location("build_data", module_path)
@@ -30,6 +41,15 @@ def test_fetch_zip_content_wraps_url_errors(monkeypatch: pytest.MonkeyPatch) -> 
     module = _load_build_data_module()
 
     def _raise_url_error(_url: str):
+        """
+        Simulate a network failure for a given URL by always raising a URLError.
+        
+        Parameters:
+            _url (str): The URL that would have been requested (unused).
+        
+        Raises:
+            URLError: Always raised with the message "network blocked".
+        """
         raise URLError("network blocked")
 
     monkeypatch.setattr(module, "urlopen", _raise_url_error)
