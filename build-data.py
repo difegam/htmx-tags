@@ -25,7 +25,14 @@ FRONT_MATTER_PATTERN = re.compile(r"^\s*\+\+\+\s*\n.*?\n\+\+\+\s*(?:\n|$)", re.D
 
 
 def build_base_payload() -> dict[str, Any]:
-    """Create the base custom-data payload."""
+    """
+    Builds the base JSON custom-data payload used by the VS Code HTML language service.
+    
+    Includes "version" set to 1.1, empty "tags" and "globalAttributes", and a "valueSets" entry named "swap" containing the standard HTMX swap modes and their descriptions.
+    
+    Returns:
+        payload (dict[str, Any]): Dictionary with keys "version", "tags", "globalAttributes", and "valueSets" (which contains the "swap" value set).
+    """
     return {
         "version": 1.1,
         "tags": [],
@@ -73,7 +80,18 @@ def build_base_payload() -> dict[str, Any]:
 
 
 def fetch_zip_content(zip_url: str) -> bytes:
-    """Fetch a ZIP archive over HTTPS."""
+    """
+    Download a ZIP archive from the given URL and return its raw bytes.
+    
+    Parameters:
+        zip_url (str): URL of the ZIP archive to download.
+    
+    Returns:
+        bytes: The content of the downloaded ZIP archive.
+    
+    Raises:
+        RuntimeError: If the HTTP response status is not 200, if the server returns an HTTP error, or if the URL cannot be reached.
+    """
     parsed_url = urlparse(zip_url)
     if parsed_url.scheme != "https":
         msg = f"Invalid archive URL scheme '{parsed_url.scheme}'. Expected 'https'."
@@ -95,7 +113,17 @@ def fetch_zip_content(zip_url: str) -> bytes:
 
 
 def strip_front_matter(markdown: str) -> str:
-    """Strip TOML front matter from HTMX markdown files."""
+    """
+    Remove TOML front matter delimited by `+++` markers from a Markdown string.
+    
+    If an opening or closing `+++` delimiter is missing, returns the input with surrounding whitespace trimmed.
+    
+    Parameters:
+        markdown (str): The Markdown source that may contain TOML front matter.
+    
+    Returns:
+        str: The Markdown content with the front matter removed and leading/trailing whitespace stripped.
+    """
     match = FRONT_MATTER_PATTERN.match(markdown)
     if match is None:
         return markdown.strip()
@@ -103,7 +131,15 @@ def strip_front_matter(markdown: str) -> str:
 
 
 def iter_attribute_docs(zip_bytes: bytes) -> list[tuple[str, str]]:
-    """Extract (attribute_name, markdown_doc) tuples from the HTMX docs archive."""
+    """
+    Collect HTMX attribute markdown files from an in-memory ZIP archive and return their names and cleaned markdown.
+    
+    Parameters:
+        zip_bytes (bytes): Bytes of a ZIP archive containing the HTMX documentation.
+    
+    Returns:
+        list[tuple[str, str]]: A list of (attribute_name, markdown) tuples where each markdown has TOML front matter removed; the list is sorted by attribute_name.
+    """
     attributes: list[tuple[str, str]] = []
     try:
         with zipfile.ZipFile(BytesIO(zip_bytes)) as zip_fd:
@@ -126,7 +162,17 @@ def iter_attribute_docs(zip_bytes: bytes) -> list[tuple[str, str]]:
 
 
 def apply_htmx_v2_adjustments(payload: dict[str, Any]) -> dict[str, Any]:
-    """Apply known HTMX 2.x compatibility adjustments to custom-data output."""
+    """
+    Apply HTMX 2.x compatibility adjustments to the payload's `globalAttributes`.
+    
+    This function removes attributes listed in REMOVED_IN_HTMX_V2 (e.g., `hx-sse`, `hx-ws`), ensures the wildcard event attributes `hx-on:*` and `hx-on::*` are present, sorts `globalAttributes` by name, and returns the modified payload.
+    
+    Parameters:
+        payload (dict[str, Any]): The custom-data payload with a `globalAttributes` list of attribute entries.
+    
+    Returns:
+        dict[str, Any]: The same payload dictionary with `globalAttributes` updated (entries removed, wildcards added if missing, and list sorted by attribute name).
+    """
     attributes: list[dict[str, Any]] = payload["globalAttributes"]
     filtered_attributes = [entry for entry in attributes if entry["name"] not in REMOVED_IN_HTMX_V2]
 
@@ -157,7 +203,15 @@ def apply_htmx_v2_adjustments(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_payload(htmx_version: str) -> dict[str, Any]:
-    """Build the full payload from upstream HTMX docs."""
+    """
+    Builds the JSON payload for the VS Code HTML language service by fetching upstream HTMX docs for the specified version, incorporating per-attribute documentation, and applying HTMX 2.x compatibility adjustments.
+    
+    Parameters:
+        htmx_version (str): HTMX release tag/version used to construct the upstream docs ZIP URL.
+    
+    Returns:
+        payload (dict[str, Any]): A payload dictionary containing keys such as `version`, `tags`, `globalAttributes`, and `valueSets` suitable for writing as the html.htmx-data.json output.
+    """
     payload = build_base_payload()
     documented_value_sets = {entry["name"] for entry in payload["valueSets"]}
 
@@ -195,7 +249,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    """Entry point."""
+    """
+    Generate the HTMX custom-data JSON file at the configured output path and return a process exit code.
+    
+    Returns:
+        int: 0 on success.
+    """
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     args = parse_args()
 
