@@ -6,3 +6,4 @@ out/
 .ty_cache/
 .DS_Store
 __pycache__/
+*.vsix
