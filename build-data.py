@@ -11,7 +11,10 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 from urllib.request import urlopen
+
+from packaging import version
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_HTMX_VERSION = "2.0.9"
@@ -29,13 +32,34 @@ def build_base_payload() -> dict[str, Any]:
             {
                 "name": "swap",
                 "values": [
-                    {"name": "innerHTML", "description": "The default, puts the content inside the target element"},
-                    {"name": "outerHTML", "description": "Replaces the entire target element with the returned content"},
-                    {"name": "afterbegin", "description": "Prepends the content before the first child inside the target"},
-                    {"name": "beforebegin", "description": "Prepends the content before the target in the targets parent element"},
-                    {"name": "beforeend", "description": "Appends the content after the last child inside the target"},
-                    {"name": "afterend", "description": "Appends the content after the target in the targets parent element"},
-                    {"name": "delete", "description": "Deletes the target element regardless of the response"},
+                    {
+                        "name": "innerHTML",
+                        "description": "The default, puts the content inside the target element",
+                    },
+                    {
+                        "name": "outerHTML",
+                        "description": "Replaces the entire target element with the returned content",
+                    },
+                    {
+                        "name": "afterbegin",
+                        "description": "Prepends the content before the first child inside the target",
+                    },
+                    {
+                        "name": "beforebegin",
+                        "description": "Prepends the content before the target in the targets parent element",
+                    },
+                    {
+                        "name": "beforeend",
+                        "description": "Appends the content after the last child inside the target",
+                    },
+                    {
+                        "name": "afterend",
+                        "description": "Appends the content after the target in the targets parent element",
+                    },
+                    {
+                        "name": "delete",
+                        "description": "Deletes the target element regardless of the response",
+                    },
                     {
                         "name": "none",
                         "description": "Does not append content from response (Out of Band Swaps and Response Headers will still be processed)",
@@ -48,9 +72,14 @@ def build_base_payload() -> dict[str, Any]:
 
 def fetch_zip_content(zip_url: str) -> bytes:
     """Fetch a ZIP archive over HTTPS."""
+    parsed_url = urlparse(zip_url)
+    if parsed_url.scheme != "https":
+        msg = f"Invalid archive URL scheme '{parsed_url.scheme}'. Expected 'https'."
+        raise ValueError(msg)
+
     LOGGER.info("Downloading htmx docs archive: %s", zip_url)
     try:
-        with urlopen(zip_url) as response:
+        with urlopen(zip_url, timeout=10) as response:
             if response.status != 200:
                 msg = f"Unexpected status code: {response.status}"
                 raise RuntimeError(msg)
@@ -101,12 +130,16 @@ def apply_htmx_v2_adjustments(payload: dict[str, Any]) -> dict[str, Any]:
         {
             "name": "hx-on:*",
             "description": "HTMX 2.x event handler syntax using `hx-on:<event-name>` (for example `hx-on:click`).",
-            "references": [{"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}],
+            "references": [
+                {"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}
+            ],
         },
         {
             "name": "hx-on::*",
             "description": "HTMX shorthand syntax for internal events using `hx-on::<event-name>`, such as `hx-on::before-request`.",
-            "references": [{"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}],
+            "references": [
+                {"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}
+            ],
         },
     ]
 
@@ -142,7 +175,9 @@ def build_payload(htmx_version: str) -> dict[str, Any]:
 
         payload["globalAttributes"].append(entry)
 
-    return apply_htmx_v2_adjustments(payload)
+    if version.parse(htmx_version) >= version.parse("2.0.0"):
+        return apply_htmx_v2_adjustments(payload)
+    return payload
 
 
 def parse_args() -> argparse.Namespace:
