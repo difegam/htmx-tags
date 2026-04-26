@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - VS Code for manual extension verification
-- Node/npm for extension packaging and publishing workflows
+- Node/npm (Node `20.19+` or `22.13+`) for extension packaging and publishing workflows
 - Python 3.12+ for local contributor tooling
 
 ## Core workflow
@@ -125,7 +125,7 @@ code --install-extension htmx-tags-django-*.vsix --force
 Reload VS Code when prompted. Uninstall with:
 
 ```bash
-code --uninstall-extension difegam.htmx-tags-django
+code --uninstall-extension 'difegam.htmx-tags-django' --force
 ```
 
 > **Note:** The extension ID is `difegam.htmx-tags-django` (publisher + name from `package.json`).
