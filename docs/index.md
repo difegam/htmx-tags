@@ -22,8 +22,10 @@ As currently implemented in this repository:
 ## Repository map
 
 - `package.json` — extension manifest and contribution points
+- `src/extension.ts` — extension entry point (declarative, no-op by design)
 - `build-data.py` — generator for custom data
 - `html.htmx-data.json` — generated artifact consumed by VS Code
+- `.vscodeignore` — controls which files are packaged into the VSIX
 - `docs/` — project and maintenance documentation
 - `zensical.toml` — docs site configuration
 

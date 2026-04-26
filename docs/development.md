@@ -9,7 +9,7 @@
 ## Core workflow
 
 1. Change generator logic in `build-data.py` (if required)
-1. Regenerate custom data (`python3 build-data.py`)
+1. Regenerate custom data with `just build-data` (or `uv run python build-data.py`)
 1. Review `html.htmx-data.json` diff
 1. Smoke test autocompletion + hover docs in VS Code
 1. Commit script changes and generated artifact together
@@ -23,13 +23,13 @@ just build-data
 The generator will:
 
 - download `htmx` release zip for configured version
-- parse markdown files in `www/content/attributes/`
+- parse markdown files in `www/content/attributes/` (path inside the downloaded archive)
 - strip front matter and preserve markdown body as description
 - write updated `html.htmx-data.json`
 
 ## Updating htmx docs version
 
-Edit `HTMX_VERSION` in `build-data.py`, then regenerate data.
+Edit `DEFAULT_HTMX_VERSION` in `build-data.py`, then regenerate data.
 
 When reviewing the resulting JSON diff, check for:
 
@@ -58,6 +58,16 @@ just docs-strict
 Note: current `zensical` releases may print `Strict mode is currently unsupported.`
 Keep `--strict` in commands anyway so behavior is enforced automatically once supported.
 
+## Running all local checks
+
+Use `just check` to lint, test, and validate formatting (runs `prek` hooks for markdown/JSON/YAML/TOML):
+
+```bash
+just check
+```
+
+**Prerequisite:** Run `just init` once after cloning to register pre-commit hooks and install all dependencies.
+
 ## Testing the extension locally
 
 ### Extension Development Host
@@ -75,25 +85,41 @@ Inside that window:
 Close the host window to stop the session. The parent window keeps running
 normally.
 
-> **Tip:** If other installed extensions interfere, add `"--disable-extensions"`
-> to `args` in `.vscode/launch.json` to isolate the test run.
+> **Tip:** If other installed extensions interfere, you can create `.vscode/launch.json`
+> with `"args": ["--disable-extensions"]` to isolate the test run.
 
 ### Package and sideload as VSIX
 
 To test the packaged extension exactly as users will receive it:
 
 ```bash
-# Compile TypeScript first
+# Install local devDependencies (required once after cloning)
+npm install
+
+# Compile TypeScript
 npm run compile
 
 # Create the .vsix bundle (no global install needed)
 npx @vscode/vsce package
 ```
 
-This produces a file like `htmx-tags-django-0.1.1.vsix`. Install it directly:
+> **Note:** If `npm run compile` exits with `tsc: command not found`, run `npm install` first.
+> The TypeScript compiler is a local `devDependency` and is not available until dependencies are installed.
+
+This produces a file like `htmx-tags-django-0.1.1.vsix`. Inspect the bundle before installing:
 
 ```bash
-code --install-extension htmx-tags-django-*.vsix
+npx @vscode/vsce ls --tree
+```
+
+Expect only a handful of files (`out/extension.js`, `html.htmx-data.json`, `package.json`,
+`README.md`, `LICENSE.txt`). If the output lists thousands of files, check `.vscodeignore` —
+a missing entry for `.venv/`, `.cache/`, or `site/` will cause a bloated package.
+
+Install directly:
+
+```bash
+code --install-extension htmx-tags-django-*.vsix --force
 ```
 
 Reload VS Code when prompted. Uninstall with:
@@ -102,19 +128,24 @@ Reload VS Code when prompted. Uninstall with:
 code --uninstall-extension difegam.htmx-tags-django
 ```
 
-### Known limitation when running tests from CLI
+> **Note:** The extension ID is `difegam.htmx-tags-django` (publisher + name from `package.json`).
+> Running `code --list-extensions` shows what is currently installed with the exact ID to use.
 
-VS Code integration tests launched from the terminal require an exclusive
-instance. If VS Code is already open you will see:
+### Running tests
 
+This project uses pytest for unit tests. Run them with:
+
+```bash
+just test
 ```
-Running extension tests from the command line is currently only supported if
-no other instance of Code is running.
+
+Or directly:
+
+```bash
+uv run pytest -q
 ```
 
-Workaround: use **VS Code Insiders** for day-to-day editing and run CLI tests
-against the stable build, or trigger tests from the debug launch configuration
-inside VS Code instead of the terminal.
+These are plain Python unit tests with no VS Code dependency and can run freely from any terminal.
 
 ## Suggested technical backlog
 
