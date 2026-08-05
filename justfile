@@ -19,6 +19,10 @@ lint:
 build-data:
     uv run python build-data.py
 
+[doc("Verify the pinned HTMX tags in build-data.py are still current upstream")]
+check-pins:
+    uv run python scripts/check-htmx-pins.py
+
 [doc("Run all local checks")]
 check: lint test
     uv run prek run --all-files

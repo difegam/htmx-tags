@@ -2,12 +2,12 @@
   "schemaVersion": 2,
   "generatedFrom": {
     "htmx2": "2.0.10",
-    "htmx4": "4.0.0-beta5"
+    "htmx4": "4.0.0-beta6"
   },
   "attributes": [
     {
       "name": "hx-action",
-      "description": "Specifies the URL to receive the request",
+      "description": "Specifies URL to receive request",
       "versions": [
         "4"
       ],
@@ -62,7 +62,7 @@
     },
     {
       "name": "hx-config",
-      "description": "Configures request behavior with JSON",
+      "description": "Configures request behavior",
       "versions": [
         "4"
       ],
@@ -70,7 +70,7 @@
         "4": "https://four.htmx.org/reference/attributes/hx-config"
       },
       "examples": {
-        "4": "<button hx-post=\"/api/users\" hx-config='{\"timeout\": 5000}'>\n    Create User\n</button>"
+        "4": "<button hx-post=\"/api/users\" hx-config=\"timeout:5s\">\n  Create User\n</button>"
       },
       "categories": {
         "4": "Advanced"
@@ -81,7 +81,7 @@
     },
     {
       "name": "hx-confirm",
-      "description": "Shows a confirmation dialog before the request",
+      "description": "Shows confirmation dialog before request",
       "versions": [
         "2",
         "4"
@@ -104,7 +104,7 @@
     },
     {
       "name": "hx-delete",
-      "description": "Issues a DELETE request to the specified URL",
+      "description": "Issues `DELETE` request to specified URL",
       "versions": [
         "2",
         "4"
@@ -127,7 +127,7 @@
     },
     {
       "name": "hx-disable",
-      "description": "Disables elements during the request",
+      "description": "Disables elements during request",
       "versions": [
         "2",
         "4"
@@ -188,7 +188,7 @@
     },
     {
       "name": "hx-encoding",
-      "description": "Sets the request encoding type",
+      "description": "Sets request encoding type",
       "versions": [
         "2",
         "4"
@@ -338,7 +338,7 @@
     },
     {
       "name": "hx-get",
-      "description": "Issues a GET request to the specified URL",
+      "description": "Issues `GET` request to specified URL",
       "versions": [
         "2",
         "4"
@@ -361,7 +361,7 @@
     },
     {
       "name": "hx-headers",
-      "description": "Adds custom headers to the request",
+      "description": "Adds custom headers to request",
       "versions": [
         "2",
         "4"
@@ -401,7 +401,7 @@
     },
     {
       "name": "hx-history-elt",
-      "description": "Marks the element to swap on history restore",
+      "description": "Marks element to swap on history restore",
       "versions": [
         "2",
         "4"
@@ -424,7 +424,7 @@
     },
     {
       "name": "hx-ignore",
-      "description": "Disables htmx processing for the element",
+      "description": "Disables htmx processing for element",
       "versions": [
         "4"
       ],
@@ -443,7 +443,7 @@
     },
     {
       "name": "hx-include",
-      "description": "Includes additional element values in the request",
+      "description": "Includes additional element values in request",
       "versions": [
         "2",
         "4"
@@ -467,7 +467,7 @@
     },
     {
       "name": "hx-indicator",
-      "description": "Specifies the loading indicator element",
+      "description": "Specifies loading indicator element",
       "versions": [
         "2",
         "4"
@@ -507,7 +507,7 @@
     },
     {
       "name": "hx-method",
-      "description": "Specifies the HTTP method for the request",
+      "description": "Specifies HTTP method for request",
       "versions": [
         "4"
       ],
@@ -569,7 +569,7 @@
     },
     {
       "name": "hx-on",
-      "description": "Runs inline JavaScript when an event fires",
+      "description": "Runs inline JavaScript when event fires",
       "versions": [
         "2",
         "4"
@@ -592,7 +592,7 @@
     },
     {
       "name": "hx-optimistic",
-      "description": "Shows optimistic content during the request",
+      "description": "Shows optimistic content during request",
       "versions": [
         "4"
       ],
@@ -645,7 +645,7 @@
     },
     {
       "name": "hx-patch",
-      "description": "Issues a PATCH request to the specified URL",
+      "description": "Issues `PATCH` request to specified URL",
       "versions": [
         "2",
         "4"
@@ -668,7 +668,7 @@
     },
     {
       "name": "hx-post",
-      "description": "Issues a POST request to the specified URL",
+      "description": "Issues `POST` request to specified URL",
       "versions": [
         "2",
         "4"
@@ -691,7 +691,7 @@
     },
     {
       "name": "hx-preload",
-      "description": "Preloads content before the user triggers a request",
+      "description": "Preloads content before user triggers request",
       "versions": [
         "4"
       ],
@@ -710,7 +710,7 @@
     },
     {
       "name": "hx-preserve",
-      "description": "Preserves the element during swaps",
+      "description": "Preserves element during swaps",
       "versions": [
         "2",
         "4"
@@ -749,7 +749,7 @@
     },
     {
       "name": "hx-push-url",
-      "description": "Pushes the URL into browser history",
+      "description": "Pushes URL into browser history",
       "versions": [
         "2",
         "4"
@@ -772,7 +772,7 @@
     },
     {
       "name": "hx-put",
-      "description": "Issues a PUT request to the specified URL",
+      "description": "Issues `PUT` request to specified URL",
       "versions": [
         "2",
         "4"
@@ -795,7 +795,7 @@
     },
     {
       "name": "hx-replace-url",
-      "description": "Replaces the current URL in browser history",
+      "description": "Replaces current URL in browser history",
       "versions": [
         "2",
         "4"
@@ -834,7 +834,7 @@
     },
     {
       "name": "hx-select",
-      "description": "Controls which part of the response to insert",
+      "description": "Controls which response part is inserted",
       "versions": [
         "2",
         "4"
@@ -845,7 +845,7 @@
       },
       "examples": {
         "2": "<div>\n    <button hx-get=\"/info\" hx-select=\"#info-detail\" hx-swap=\"outerHTML\">\n        Get Info!\n    </button>\n</div>",
-        "4": "<button hx-get=\"/page\" hx-select=\"#content\">Load Content</button>"
+        "4": "<button hx-get=\"/info\" hx-target=\"#result\" hx-select=\"#info-detail\">\n  Get Info\n</button>\n\n<div id=\"result\">\n  <!-- Selected content goes here -->\n</div>"
       },
       "categories": {
         "2": "Core",
@@ -857,7 +857,7 @@
     },
     {
       "name": "hx-select-oob",
-      "description": "Picks response elements to swap into the page by ID",
+      "description": "Picks response elements to swap into page by ID",
       "versions": [
         "2",
         "4"
@@ -899,7 +899,7 @@
     },
     {
       "name": "hx-swap",
-      "description": "Controls how the response is inserted",
+      "description": "Controls how response is inserted",
       "versions": [
         "2",
         "4"
@@ -1059,7 +1059,7 @@
     },
     {
       "name": "hx-swap-oob",
-      "description": "Marks response elements to swap into the page by ID",
+      "description": "Marks response elements to swap into page by ID",
       "versions": [
         "2",
         "4"
@@ -1262,7 +1262,7 @@
     },
     {
       "name": "hx-target",
-      "description": "Controls where the response is inserted",
+      "description": "Controls where response is inserted",
       "versions": [
         "2",
         "4"
@@ -1333,7 +1333,7 @@
     },
     {
       "name": "hx-trigger",
-      "description": "Controls when the element issues a request",
+      "description": "Controls when element issues requests",
       "versions": [
         "2",
         "4"
@@ -1449,7 +1449,7 @@
     },
     {
       "name": "hx-validate",
-      "description": "Validates before submitting the request",
+      "description": "Validates before submitting request",
       "versions": [
         "2",
         "4"

@@ -18,7 +18,7 @@ from urllib.request import urlopen
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_HTMX_V2_VERSION = "2.0.10"
-DEFAULT_HTMX_V4_VERSION = "4.0.0-beta5"
+DEFAULT_HTMX_V4_VERSION = "4.0.0-beta6"
 DEFAULT_OUTPUT_FILE = Path("htmx.catalog.json")
 REMOVED_IN_HTMX_V2 = {"hx-sse", "hx-ws"}
 
@@ -586,11 +586,7 @@ def extract_attribute_categories(zip_bytes: bytes, major: str) -> dict[str, str]
     if major not in {"2", "4"}:
         raise ValueError(f"Unsupported HTMX major version: {major}")
 
-    suffix = (
-        "/www/content/reference.md"
-        if major == "2"
-        else "/www/src/content/reference/index.mdx"
-    )
+    suffix = "/www/content/reference.md" if major == "2" else "/www/src/content/reference/index.mdx"
     try:
         with zipfile.ZipFile(BytesIO(zip_bytes)) as zip_fd:
             path = next((name for name in zip_fd.namelist() if name.endswith(suffix)), None)

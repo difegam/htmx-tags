@@ -34,7 +34,7 @@ def _archive(files: dict[str, str]) -> bytes:
 def test_default_versions_are_pinned() -> None:
     module = _load_build_data_module()
     assert module.DEFAULT_HTMX_V2_VERSION == "2.0.10"
-    assert module.DEFAULT_HTMX_V4_VERSION == "4.0.0-beta5"
+    assert module.DEFAULT_HTMX_V4_VERSION == "4.0.0-beta6"
 
 
 def test_fetch_zip_content_wraps_url_errors(monkeypatch: pytest.MonkeyPatch) -> None:

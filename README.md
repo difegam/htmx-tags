@@ -80,7 +80,7 @@ Cross-template lookup scans matching workspace files on demand. When multiple ap
 
 ## HTMX version support
 
-The committed catalog covers HTMX `2.0.10` and `4.0.0-beta5`. `compatible` mode is the default: it accepts their union without version warnings. Choose `2` or `4` when you want cross-version syntax surfaced as hints.
+The committed catalog covers HTMX `2.0.10` and `4.0.0-beta6`. `compatible` mode is the default: it accepts their union without version warnings. Choose `2` or `4` when you want cross-version syntax surfaced as hints.
 
 ## Settings
 
@@ -109,7 +109,7 @@ npm run test:extension
 npm run package
 ```
 
-Regenerate the committed offline catalog from the pinned HTMX `2.0.10` and `4.0.0-beta5` tags:
+Regenerate the committed offline catalog from the pinned HTMX `2.0.10` and `4.0.0-beta6` tags:
 
 ```bash
 npm run build-data

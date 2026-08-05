@@ -19,9 +19,11 @@ Run from repo root. `just` recipes wrap the same commands.
 
 ## Catalog regeneration (the non-obvious trap)
 
-`htmx.catalog.json` is committed and is the extension's offline data source — it is NOT generated at runtime. Pinned upstream HTMX versions: `2.0.10` and `4.0.0-beta5` (constants in `build-data.py`).
+`htmx.catalog.json` is committed and is the extension's offline data source — it is NOT generated at runtime. Pinned upstream HTMX versions: `2.0.10` and `4.0.0-beta6` (constants in `build-data.py`).
 
 Regenerate with `npm run build-data` (= `uv --cache-dir .cache/uv run python build-data.py`). CI fails if `git diff --exit-code -- htmx.catalog.json` shows drift, so after changing `build-data.py` or its inputs, regenerate AND commit the catalog together.
+
+CI also runs `uv run python scripts/check-htmx-pins.py` (or `just check-pins`) to fail when the pinned tags drift from the latest `bigskysoftware/htmx` git tags. Fix a pin-staleness failure by bumping `DEFAULT_HTMX_V*_VERSION` in `build-data.py`, regenerating the catalog, and committing both together — the script queries the public GitHub `/tags` endpoint, so unauthenticated rate limits apply.
 
 ## CI order (match this locally before pushing)
 

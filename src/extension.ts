@@ -3,7 +3,6 @@ import * as vscode from "vscode";
 import {
   type CatalogAttribute,
   type CatalogIndex,
-  type CatalogValue,
   type HtmxVersionMode,
   loadCatalog,
 } from "./catalog.js";
@@ -37,6 +36,21 @@ const PARTIAL_SELECTOR: vscode.DocumentFilter[] = [{ language: "django-html" }, 
 const PYTHON_SELECTOR: vscode.DocumentFilter = { language: "python" };
 const DIAGNOSTIC_SOURCE = "htmx-tags";
 const COMPLETION_DOCUMENTATION = new WeakMap<vscode.CompletionItem, () => vscode.MarkdownString>();
+// ponytail: cap to avoid 100k+ results on monorepos repeating index.html; raise if users report truncation.
+const TEMPLATE_FINDFILES_LIMIT = 2000;
+const ATTRIBUTE_PRIORITIES = [
+  "hx-get",
+  "hx-post",
+  "hx-put",
+  "hx-patch",
+  "hx-delete",
+  "hx-method",
+  "hx-target",
+  "hx-swap",
+  "hx-trigger",
+  "hx-boost",
+  "hx-ext",
+];
 
 function configuration(document?: vscode.TextDocument): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration("htmxTags", document?.uri);
@@ -113,20 +127,7 @@ function attributeCompletion(
 }
 
 function attributePriority(name: string): string {
-  const priorities = [
-    "hx-get",
-    "hx-post",
-    "hx-put",
-    "hx-patch",
-    "hx-delete",
-    "hx-method",
-    "hx-target",
-    "hx-swap",
-    "hx-trigger",
-    "hx-boost",
-    "hx-ext",
-  ];
-  const index = priorities.indexOf(name);
+  const index = ATTRIBUTE_PRIORITIES.indexOf(name);
   return index < 0 ? "20" : index.toString().padStart(2, "0");
 }
 
@@ -274,7 +275,12 @@ async function resolveTemplatePartials(
   if (cached !== undefined) {
     return cached;
   }
-  const uris = await vscode.workspace.findFiles(`**/${escapeGlobSegment(basename)}`, undefined, undefined, token);
+  const uris = await vscode.workspace.findFiles(
+    `**/${escapeGlobSegment(normalized)}`,
+    undefined,
+    TEMPLATE_FINDFILES_LIMIT,
+    token,
+  );
   const suffix = `/${normalized}`;
   const matches = uris
     .filter((uri) => uri.path === normalized || uri.path.endsWith(suffix))
@@ -429,13 +435,7 @@ function valueCompletionItems(
       .map((value) => value.trim())
       .filter(Boolean);
   } else if (resolved.canonicalName === "hx-disinherit") {
-    const attributes: CatalogValue[] = catalog.list(mode).map((candidate) => ({
-      name: candidate.name,
-      description: `Disable inheritance of ${candidate.name}`,
-      versions: candidate.versions,
-      kind: "attribute",
-    }));
-    values = [...values, ...attributes];
+    values = [...values, ...catalog.disinheritCandidates(mode)];
     const segment = beforeCursor.split(/[\s,]/).at(-1) ?? "";
     start = offset - segment.length;
     used = beforeCursor.split(/[\s,]/).filter(Boolean);

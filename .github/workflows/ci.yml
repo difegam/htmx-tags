@@ -55,6 +55,11 @@ jobs:
                   npm run build-data
                   git diff --exit-code -- htmx.catalog.json
 
+            - name: Verify HTMX pins are current
+              run: uv run python scripts/check-htmx-pins.py
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+
             - name: Run VS Code extension-host tests
               run: xvfb-run -a npm run test:extension
 

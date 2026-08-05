@@ -11,7 +11,7 @@ const catalog = new CatalogIndex(
 
 test("catalog contains both pinned HTMX versions", () => {
   assert.equal(catalog.data.schemaVersion, 2);
-  assert.deepEqual(catalog.data.generatedFrom, { htmx2: "2.0.10", htmx4: "4.0.0-beta5" });
+  assert.deepEqual(catalog.data.generatedFrom, { htmx2: "2.0.10", htmx4: "4.0.0-beta6" });
   assert.equal(catalog.resolve("hx-get")?.versions.join(","), "2,4");
   assert.deepEqual(catalog.resolve("hx-get")?.categories, { "2": "Core", "4": "Requests" });
   assert.deepEqual(catalog.resolve("hx-boost")?.categories, { "2": "Additional", "4": "Enhancements" });

@@ -109,7 +109,7 @@ def test_snippets_use_only_attributes_shared_by_htmx_2_and_4() -> None:
     module = _load_build_snippets_module()
     catalog = module.load_catalog()
     htmx_catalog = json.loads((ROOT / "htmx.catalog.json").read_text(encoding="utf-8"))
-    versions = {entry["name"]: entry["versions"] for entry in htmx_catalog["attributes"]}
+    attributes = {entry["name"]: entry for entry in htmx_catalog["attributes"]}
     used_attributes = {
         match.group(1)
         for entry in catalog
@@ -118,8 +118,11 @@ def test_snippets_use_only_attributes_shared_by_htmx_2_and_4() -> None:
     }
     assert used_attributes
     assert {
-        name: versions.get(name) for name in used_attributes if versions.get(name) != ["2", "4"]
+        name: attributes.get(name, {}).get("versions")
+        for name in used_attributes
+        if attributes.get(name, {}).get("versions") != ["2", "4"]
     } == {}
+    assert not {name for name in used_attributes if attributes[name].get("deprecated")}
 
 
 @pytest.mark.parametrize(
@@ -237,6 +240,7 @@ def test_mutating_forms_require_csrf() -> None:
         (['<a href="javascript:alert(1)">Open</a>'], "javascript URLs"),
         (['<div hx-vals="js:{value: event.target.value}"></div>'], "evaluated js"),
         (['<iframe src="https://example.com/widget"></iframe>'], "remote executable"),
+        (['<main hx-ext="preload"></main>'], "extension declarations"),
         (['<div hx-sse="connect:/events"></div>'], "SSE or WebSocket"),
         (['<div hx-ws="connect:/socket"></div>'], "SSE or WebSocket"),
     ],

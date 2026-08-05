@@ -66,6 +66,8 @@ export class CatalogIndex {
   readonly data: CatalogData;
   private readonly attributes: Map<string, CatalogAttribute>;
   private readonly patterns: Array<{ entry: CatalogPattern; regex: RegExp }>;
+  private readonly listsByMode = new Map<HtmxVersionMode, CatalogAttribute[]>();
+  private readonly disinheritByMode = new Map<HtmxVersionMode, CatalogValue[]>();
 
   constructor(data: CatalogData) {
     if (data.schemaVersion !== 2 || !Array.isArray(data.attributes) || !Array.isArray(data.patterns)) {
@@ -115,10 +117,37 @@ export class CatalogIndex {
   }
 
   list(mode: HtmxVersionMode): CatalogAttribute[] {
-    if (mode === "compatible") {
-      return this.data.attributes;
+    const cached = this.listsByMode.get(mode);
+    if (cached !== undefined) {
+      return cached;
     }
-    return this.data.attributes.filter((entry) => entry.versions.includes(mode));
+    const result =
+      mode === "compatible"
+        ? this.data.attributes
+        : this.data.attributes.filter((entry) => entry.versions.includes(mode));
+    this.listsByMode.set(mode, result);
+    return result;
+  }
+
+  /**
+   * Synthesized {@link CatalogValue} entries for `hx-disinherit` completions: each
+   * catalog attribute becomes a disinheritable suggestion. Precomputed per mode
+   * because the catalog never changes after load and `valueCompletionItems` runs
+   * on nearly every keystroke.
+   */
+  disinheritCandidates(mode: HtmxVersionMode): CatalogValue[] {
+    const cached = this.disinheritByMode.get(mode);
+    if (cached !== undefined) {
+      return cached;
+    }
+    const result: CatalogValue[] = this.list(mode).map((candidate) => ({
+      name: candidate.name,
+      description: `Disable inheritance of ${candidate.name}`,
+      versions: candidate.versions,
+      kind: "attribute",
+    }));
+    this.disinheritByMode.set(mode, result);
+    return result;
   }
 
   private fromAttribute(

@@ -5,6 +5,8 @@
   "version": "0.2.0",
   "publisher": "difegam",
   "license": "Apache-2.0",
+  "preview": true,
+  "extensionKind": ["ui"],
   "repository": {
     "type": "git",
     "url": "https://github.com/difegam/htmx-tags"
@@ -97,7 +99,7 @@
     "bundle:watch": "node esbuild.js --watch",
     "compile": "tsc -p ./",
     "lint": "eslint .",
-    "check-types": "tsc -p ./ --noEmit",
+    "check-types": "tsc -p ./ --noEmit --incremental false",
     "build-data": "uv --cache-dir .cache/uv run python build-data.py",
     "build-snippets": "uv --cache-dir .cache/uv run python build-snippets.py",
     "check-snippets": "uv --cache-dir .cache/uv run python build-snippets.py --check",

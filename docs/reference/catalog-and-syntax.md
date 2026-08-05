@@ -1,6 +1,6 @@
 # Catalog and Dynamic Syntax
 
-The committed catalog is generated from HTMX `2.0.10` and `4.0.0-beta5` and is the extension's only runtime documentation source.
+The committed catalog is generated from HTMX `2.0.10` and `4.0.0-beta6` and is the extension's only runtime documentation source.
 
 ## Catalog entries
 
