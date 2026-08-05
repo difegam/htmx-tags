@@ -89,10 +89,8 @@ The committed catalog covers HTMX `2.0.10` and `4.0.0-beta5`. `compatible` mode 
 
 ## Django snippets
 
-Type one of these prefixes in a `django-html` document:
-
-- `htmx-get`, `htmx-post`, `htmx-delete`, `htmx-search`, `htmx-infinite`
-- `partialdef`, `partialdef-inline`, `partial`
+Type a snippet prefix in a `django-html` document to insert a secure Django-ready HTMX pattern.
+See the [snippet and example catalog](docs/reference/snippets.md) for every prefix and its generated output.
 
 ## Offline by design
 
@@ -111,6 +109,13 @@ Regenerate the committed offline catalog from the pinned HTMX `2.0.10` and `4.0.
 
 ```bash
 npm run build-data
+```
+
+Add or update a snippet once in `snippets/django-htmx.source.json`, then regenerate its runtime
+definition and documentation together:
+
+```bash
+npm run build-snippets
 ```
 
 ## Documentation

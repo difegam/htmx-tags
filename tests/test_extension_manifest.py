@@ -47,6 +47,12 @@ def test_django_snippets_are_registered() -> None:
     }
 
 
+def test_snippet_build_sources_are_excluded_from_vsix() -> None:
+    ignored = (ROOT / ".vscodeignore").read_text(encoding="utf-8").splitlines()
+    assert "build-snippets.py" in ignored
+    assert "snippets/*.source.json" in ignored
+
+
 def test_catalog_shape_and_version_union() -> None:
     catalog = _read_json(ROOT / "htmx.catalog.json")
     assert catalog["schemaVersion"] == 2

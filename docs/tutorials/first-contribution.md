@@ -18,9 +18,11 @@ uv sync --all-groups
 | Resolution rules                           | `src/catalog.ts`                        |
 | Validation behavior                        | `src/diagnostics.ts`                    |
 | VS Code provider behavior                  | `src/extension.ts`                      |
-| Django snippet                             | `snippets/django-htmx.json`             |
+| Django snippet                             | `snippets/django-htmx.source.json`      |
 
-Add or update the focused Node or Python test that fails before the change. Regenerate the catalog only when its generator inputs or metadata change.
+Add or update the focused Node or Python test that fails before the change. Regenerate the HTMX
+catalog only when its generator inputs or metadata change. Run `npm run build-snippets` after a
+snippet source change; it updates the packaged JSON and reference page together.
 
 ## Verify
 

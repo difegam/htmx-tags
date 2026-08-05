@@ -33,6 +33,8 @@ docs/**
 design-qa.md
 site/**
 build-data.py
+build-snippets.py
+snippets/*.source.json
 pyproject.toml
 uv.lock
 ruff.toml
