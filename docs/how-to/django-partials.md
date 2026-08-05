@@ -26,7 +26,7 @@ The `partialdef` and `partialdef-inline` snippets insert these structures.
 {% partial result_card %}
 ```
 
-After `{% partial `, completion offers names defined in the current file. Hovering a definition or reference identifies its definition line and whether it is inline. Go to Definition and Peek Definition jump from the reference to the matching `partialdef` block.
+After `{% partial`, completion offers names defined in the current file. Hovering a definition or reference identifies its definition line and whether it is inline. Go to Definition and Peek Definition jump from the reference to the matching `partialdef` block.
 
 Typing after `{%` also offers `partialdef`, `partialdef … inline`, `partial`, and `endpartialdef` tag completions.
 

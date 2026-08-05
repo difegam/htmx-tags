@@ -48,20 +48,33 @@ interface DebugTarget {
   webSocketDebuggerUrl?: string;
 }
 
+interface PendingRequest {
+  resolve: (value: unknown) => void;
+  reject: (reason: Error) => void;
+}
+
 class CdpClient {
   private readonly socket: WebSocket;
   private nextId = 1;
-  private readonly pending = new Map<number, (value: unknown) => void>();
+  private readonly pending = new Map<number, PendingRequest>();
 
   private constructor(socket: WebSocket) {
     this.socket = socket;
     socket.addEventListener("message", (event) => {
       const message = JSON.parse(String(event.data)) as { id?: number; result?: unknown };
       if (message.id !== undefined) {
-        this.pending.get(message.id)?.(message.result);
+        this.pending.get(message.id)?.resolve(message.result);
         this.pending.delete(message.id);
       }
     });
+    const rejectPending = (reason: Error): void => {
+      for (const request of this.pending.values()) {
+        request.reject(reason);
+      }
+      this.pending.clear();
+    };
+    socket.addEventListener("error", () => rejectPending(new Error("VS Code debugger connection errored")));
+    socket.addEventListener("close", () => rejectPending(new Error("VS Code debugger connection closed")));
   }
 
   static async connect(url: string): Promise<CdpClient> {
@@ -77,7 +90,9 @@ class CdpClient {
 
   async send<T>(method: string, params: Record<string, unknown> = {}): Promise<T> {
     const id = this.nextId++;
-    const result = new Promise<T>((resolve) => this.pending.set(id, (value) => resolve(value as T)));
+    const result = new Promise<T>((resolve, reject) =>
+      this.pending.set(id, { resolve: (value) => resolve(value as T), reject }),
+    );
     this.socket.send(JSON.stringify({ id, method, params }));
     return result;
   }
@@ -110,45 +125,48 @@ async function waitForWorkbench(): Promise<CdpClient> {
 
 async function captureStates(): Promise<void> {
   const client = await waitForWorkbench();
-  await client.send("Page.enable");
-  mkdirSync(path.join(ROOT, "images"), { recursive: true });
-  mkdirSync(FRAME_DIR, { recursive: true });
+  try {
+    await client.send("Page.enable");
+    mkdirSync(path.join(ROOT, "images"), { recursive: true });
+    mkdirSync(FRAME_DIR, { recursive: true });
 
-  for (const state of STATES) {
-    let ready = false;
-    for (let attempt = 0; attempt < 200; attempt++) {
-      try {
-        if (readFileSync(STATE_FILE, "utf8") === state) {
-          ready = true;
-          break;
+    for (const state of STATES) {
+      let ready = false;
+      for (let attempt = 0; attempt < 200; attempt++) {
+        try {
+          if (readFileSync(STATE_FILE, "utf8") === state) {
+            ready = true;
+            break;
+          }
+        } catch {
+          // The extension test has not prepared this state yet.
         }
-      } catch {
-        // The extension test has not prepared this state yet.
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-    if (!ready) {
-      throw new Error(`Screenshot state '${state}' was never reported by the extension test`);
-    }
-    const result = await client.send<{ data: string }>("Page.captureScreenshot", {
-      format: "png",
-      fromSurface: true,
-    });
-    const frame = Buffer.from(result.data, "base64");
-    const demo = Object.entries(DEMOS).find(([, states]) => states.includes(state));
-    if (demo !== undefined) {
-      const [name, states] = demo;
-      writeFileSync(path.join(FRAME_DIR, `${name}-${states.indexOf(state) + 1}.png`), frame);
-      if (state === states.at(-1)) {
-        createGif(name);
+      if (!ready) {
+        throw new Error(`Screenshot state '${state}' was never reported by the extension test`);
       }
-    } else {
-      writeFileSync(path.join(ROOT, "images", `${state}.png`), frame);
-      copyFileSync(path.join(ROOT, "images", `${state}.png`), path.join(ROOT, "docs/assets/images", `${state}.png`));
+      const result = await client.send<{ data: string }>("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+      });
+      const frame = Buffer.from(result.data, "base64");
+      const demo = Object.entries(DEMOS).find(([, states]) => states.includes(state));
+      if (demo !== undefined) {
+        const [name, states] = demo;
+        writeFileSync(path.join(FRAME_DIR, `${name}-${states.indexOf(state) + 1}.png`), frame);
+        if (state === states.at(-1)) {
+          createGif(name);
+        }
+      } else {
+        writeFileSync(path.join(ROOT, "images", `${state}.png`), frame);
+        copyFileSync(path.join(ROOT, "images", `${state}.png`), path.join(ROOT, "docs/assets/images", `${state}.png`));
+      }
+      writeFileSync(`${STATE_FILE}.${state}.ack`, "captured");
     }
-    writeFileSync(`${STATE_FILE}.${state}.ack`, "captured");
+  } finally {
+    client.close();
   }
-  client.close();
 }
 
 function createGif(name: string): void {

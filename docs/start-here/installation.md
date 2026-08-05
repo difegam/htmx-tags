@@ -18,7 +18,7 @@ After installing it, open a template and confirm that the language indicator in 
 
 ## Verify
 
-Create or open an HTML file and place the cursor inside the element, right after `button `:
+Create or open an HTML file and place the cursor inside the element, right after `button`:
 
 ```html
 <button ></button>

@@ -488,7 +488,7 @@ DYNAMIC_PATTERNS: list[dict[str, Any]] = [
     },
     {
         "name": "hx-target-<status>",
-        "pattern": r"^hx-target-(?:error|\*|[1-5](?:[0-9]{2}|[0-9][*x]|[*x]{1,2}))$",
+        "pattern": r"^hx-target-(?:error|\*|[1-5](?:[0-9]{2}|xx|[0-9]\*|\*))$",
         "description": "Target responses by HTTP status through the response-targets extension.",
         "versions": ["2"],
         "documentation": {"2": "https://htmx.org/extensions/response-targets/"},

@@ -296,6 +296,9 @@ async function resolveTemplatePartials(
       resolved.push({ document, definition, workspacePath });
     }
   }
+  if (token.isCancellationRequested) {
+    return resolved;
+  }
   templatePartialCache.set(normalized, resolved);
   return resolved;
 }

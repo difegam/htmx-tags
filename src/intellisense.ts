@@ -128,11 +128,11 @@ export function valueExample(attributeName: string, value: CatalogValue): string
 }
 
 function tableCell(value: string): string {
-  return value.replace(/\r?\n/g, " ").replace(/\|/g, "\\|");
+  return value.replace(/\r?\n/g, " ").replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
 }
 
 function code(value: string): string {
-  return value.replace(/`/g, "\\`");
+  return value.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
 }
 
 function commandUri(command: string, args?: unknown[]): string {

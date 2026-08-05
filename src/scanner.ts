@@ -175,6 +175,10 @@ function parseTag(text: string, start: number): HtmlTag | undefined {
   return tag;
 }
 
+const RAW_TEXT_OPEN = /<(script|style)\b[^>]*>/iy;
+const SCRIPT_CLOSE = /<\/script\s*>/gi;
+const STYLE_CLOSE = /<\/style\s*>/gi;
+
 function maskIgnoredDjangoRegions(text: string): string {
   const chars = [...text];
   const mask = (start: number, end: number): void => {
@@ -197,15 +201,19 @@ function maskIgnoredDjangoRegions(text: string): string {
       cursor = end;
       continue;
     }
-    const rawText = /^<(script|style)\b[^>]*>/i.exec(text.slice(cursor));
-    if (rawText !== null) {
-      const contentStart = cursor + rawText[0].length;
-      const closing = new RegExp(`<\\/${rawText[1]}\\s*>`, "i");
-      const match = closing.exec(text.slice(contentStart));
-      const end = match === null ? text.length : contentStart + match.index + match[0].length;
-      mask(cursor, end);
-      cursor = end;
-      continue;
+    if (text[cursor] === "<") {
+      RAW_TEXT_OPEN.lastIndex = cursor;
+      const rawText = RAW_TEXT_OPEN.exec(text);
+      if (rawText !== null) {
+        const contentStart = cursor + rawText[0].length;
+        const closing = rawText[1].toLowerCase() === "script" ? SCRIPT_CLOSE : STYLE_CLOSE;
+        closing.lastIndex = contentStart;
+        const match = closing.exec(text);
+        const end = match === null ? text.length : match.index + match[0].length;
+        mask(cursor, end);
+        cursor = end;
+        continue;
+      }
     }
     if (text.startsWith("{%", cursor)) {
       const tagEnd = findEnd(text, cursor + 2, "%}");

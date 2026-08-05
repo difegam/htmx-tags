@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import zipfile
 
 import httpx2
@@ -73,6 +74,41 @@ def test_resolve_htmx_links_handles_paths_and_fragments() -> None:
     assert "https://htmx.org/attributes/hx-target/" in result
     assert "https://htmx.org/docs/#parameters" in result
     assert "@/" not in result
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "hx-target-error",
+        "hx-target-*",
+        "hx-target-404",
+        "hx-target-4xx",
+        "hx-target-40*",
+        "hx-target-4*",
+    ],
+)
+def test_hx_target_status_pattern_accepts_documented_forms(value: str) -> None:
+    module = _load_build_data_module()
+    patterns = {pattern["name"]: pattern for pattern in module.DYNAMIC_PATTERNS}
+    pattern = patterns["hx-target-<status>"]["pattern"]
+    assert re.match(pattern, value) is not None
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "hx-target-4**",
+        "hx-target-4*x",
+        "hx-target-4x*",
+        "hx-target-4xxx",
+        "hx-target-4x",
+    ],
+)
+def test_hx_target_status_pattern_rejects_malformed_wildcards(value: str) -> None:
+    module = _load_build_data_module()
+    patterns = {pattern["name"]: pattern for pattern in module.DYNAMIC_PATTERNS}
+    pattern = patterns["hx-target-<status>"]["pattern"]
+    assert re.match(pattern, value) is None
 
 
 def test_iter_attribute_docs_supports_both_repository_layouts() -> None:

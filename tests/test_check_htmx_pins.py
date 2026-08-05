@@ -15,15 +15,22 @@ def test_latest_v2_ignores_prereleases() -> None:
 
 def test_fetch_tags_uses_github_token(monkeypatch: pytest.MonkeyPatch) -> None:
     captured_requests: list[httpx2.Request] = []
+    captured_headers: list[dict[str, str]] = []
 
     def handler(request: httpx2.Request) -> httpx2.Response:
         captured_requests.append(request)
         return httpx2.Response(200, json=[{"name": "v2.0.10"}])
 
-    monkeypatch.setenv("GITHUB_TOKEN", "test-token")
-    headers = {"Authorization": "Bearer test-token"}
-    client = httpx2.Client(transport=httpx2.MockTransport(handler), headers=headers)
+    def fake_make_client(**kwargs: object) -> httpx2.Client:
+        headers = kwargs.pop("headers")
+        assert isinstance(headers, dict)
+        captured_headers.append(headers)
+        return httpx2.Client(transport=httpx2.MockTransport(handler), headers=headers, **kwargs)
 
-    assert pins._fetch_tags(client=client) == ["2.0.10"]
+    monkeypatch.setenv("GITHUB_TOKEN", "test-token")
+    monkeypatch.setattr(pins, "make_client", fake_make_client)
+
+    assert pins._fetch_tags() == ["2.0.10"]
     assert len(captured_requests) == 1
+    assert captured_headers[0]["Authorization"] == "Bearer test-token"
     assert captured_requests[0].headers["Authorization"] == "Bearer test-token"

@@ -89,7 +89,7 @@ FORBIDDEN_PATTERNS = (
     ("extension declarations", re.compile(r"\bhx-ext\b", re.I)),
     ("excluded SSE or WebSocket attributes", re.compile(r"\bhx-(?:sse|ws)\b", re.I)),
 )
-PLACEHOLDER_PATTERN = re.compile(r"\$\{\d+:((?:\\.|[^}])*)\}")
+PLACEHOLDER_PATTERN = re.compile(r"\$\{\d+:((?:\\.|[^\\}])*)\}")
 CHOICE_PATTERN = re.compile(r"\$\{\d+\|([^,|}]+)(?:,[^|}]*)?\|\}")
 TABSTOP_PATTERN = re.compile(r"\$\d+")
 
