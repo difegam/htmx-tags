@@ -42,7 +42,7 @@
     "onLanguage:django-html",
     "onLanguage:python"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "icon": "images/icon.png",
   "galleryBanner": {
     "color": "#0C4B33",
@@ -92,6 +92,9 @@
     ]
   },
   "scripts": {
+    "vscode:prepublish": "npm run check-types && npm run bundle",
+    "bundle": "node esbuild.js --production",
+    "bundle:watch": "node esbuild.js --watch",
     "compile": "tsc -p ./",
     "lint": "eslint .",
     "check-types": "tsc -p ./ --noEmit",
@@ -100,7 +103,7 @@
     "check-snippets": "uv --cache-dir .cache/uv run python build-snippets.py --check",
     "test": "npm run test:unit && npm run check-snippets && uv --cache-dir .cache/uv run pytest -q",
     "test:unit": "npm run compile && node --test out/test/*.test.js",
-    "test:extension": "npm run compile && node out/test/runTest.js",
+    "test:extension": "npm run compile && npm run bundle && node out/test/runTest.js",
     "capture-screenshots": "bash scripts/regenerate-demo-assets.sh",
     "package": "vsce package"
   },
@@ -111,6 +114,7 @@
     "@typescript-eslint/parser": "^8.31.1",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.6.2",
+    "esbuild": "^0.28.1",
     "eslint": "^9.26.0",
     "typescript": "^5.8.3"
   },

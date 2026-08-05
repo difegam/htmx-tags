@@ -8,15 +8,19 @@ flowchart LR
     Generator --> Catalog["htmx.catalog.json"]
     Catalog --> Runtime["Catalog index"]
     Source["HTML, Django HTML, or Python document"] --> Scanner["Shared scanner"]
-    Scanner --> Completion["Completion provider"]
-    Scanner --> Hover["Hover provider"]
-    Scanner --> Diagnostics["Diagnostics provider"]
-    Scanner --> Definition["Definition provider"]
+    Scanner --> Cache["Version-keyed scan cache"]
+    Cache --> Completion["Completion provider"]
+    Cache --> Hover["Hover provider"]
+    Cache --> Diagnostics["Diagnostics provider"]
+    Cache --> Definition["Definition provider"]
+    Cache --> CodeActions["Quick-fix code actions"]
+    Cache --> Rename["Reference and rename providers"]
     Workspace["Matching workspace templates"] --> Completion
     Workspace --> Definition
     Runtime --> Completion
     Runtime --> Hover
     Runtime --> Diagnostics
+    Runtime --> CodeActions
 ```
 
 ## Build-time catalog
@@ -29,7 +33,9 @@ flowchart LR
 
 The scanner skips HTML comments, Django comments, `{% comment %}` and `{% verbatim %}` regions, and script/style bodies. It preserves Django expressions in attribute values, recognizes same-file `{% partialdef %}` and `{% partial %}` tags, and finds static cross-template partial references in Django includes and supported Python calls.
 
-`src/extension.ts` registers HTMX providers for `html` and `django-html`, plus partial completion and definition providers for `django-html` and Python. Cross-template requests find matching workspace files and scan them on demand. Diagnostics remain limited to HTML and Django HTML; they are debounced after document changes, cleared when a document closes, and recomputed when `htmxTags` settings change.
+`src/scanCache.ts` memoizes each document's scan by its version, so the completion, hover, diagnostics, code-action, reference, and rename providers reuse one parse per revision instead of re-scanning on every request. Cross-template partial lookups are cached by template name and invalidated by a file-system watcher, so completion and navigation inside an `include`/`render` string do not re-glob the workspace on every keystroke.
+
+`src/extension.ts` registers HTMX providers for `html` and `django-html`, plus partial completion and definition providers for `django-html` and Python. It also registers quick-fix code actions for its own diagnostics (`src/quickfixes.ts`) and reference and rename providers for same-file Django partials. Cross-template requests find matching workspace files and scan them on demand. Diagnostics remain limited to HTML and Django HTML; they are debounced after document changes, cleared when a document closes, and recomputed when `htmxTags` settings change. If the committed catalog cannot be loaded, activation reports the error and no providers are registered.
 
 ## Design boundaries
 

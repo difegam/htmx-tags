@@ -1,5 +1,5 @@
 import type { CatalogIndex, HtmxVersionMode } from "./catalog.js";
-import { scanDocument } from "./scanner.js";
+import { scanDocument, type ScanResult } from "./scanner.js";
 
 export type IssueSeverity = "warning" | "hint";
 
@@ -20,8 +20,8 @@ export function analyzeDocument(
   languageId: string,
   catalog: CatalogIndex,
   mode: HtmxVersionMode,
+  scan: ScanResult = scanDocument(text),
 ): AnalysisIssue[] {
-  const scan = scanDocument(text);
   const issues: AnalysisIssue[] = [];
 
   for (const attribute of scan.attributes) {

@@ -22,7 +22,20 @@ CATEGORIES = (
     "Server responses",
     "Django partials",
 )
-REQUIRED_FIELDS = {"name", "prefix", "category", "description", "body", "usage"}
+CLASSIFICATIONS = {
+    "common": "Common",
+    "curated": "Curated recipe",
+    "django-6": "Django 6",
+}
+REQUIRED_FIELDS = {
+    "name",
+    "prefix",
+    "category",
+    "classification",
+    "description",
+    "body",
+    "usage",
+}
 PREFIX_PATTERN = re.compile(r"^(?:htmx-[a-z0-9]+(?:-[a-z0-9]+)*|partialdef(?:-inline)?|partial)$")
 MUTATING_ATTRIBUTE_PATTERN = re.compile(r"\bhx-(?:post|put|patch|delete)\s*=", re.I)
 FORBIDDEN_PATTERNS = (
@@ -77,13 +90,21 @@ def validate_catalog(catalog: list[dict[str, Any]]) -> None:
                 details.append(f"unexpected {', '.join(extra)}")
             raise ValueError(f"{label}: invalid fields ({'; '.join(details)})")
 
-        for field in ("name", "prefix", "category", "description", "usage"):
+        for field in (
+            "name",
+            "prefix",
+            "category",
+            "classification",
+            "description",
+            "usage",
+        ):
             if not isinstance(entry[field], str) or not entry[field].strip():
                 raise ValueError(f"{label}: {field} must be a non-empty string")
 
         name = entry["name"]
         prefix = entry["prefix"]
         category = entry["category"]
+        classification = entry["classification"]
         body = entry["body"]
 
         if name in names:
@@ -94,6 +115,10 @@ def validate_catalog(catalog: list[dict[str, Any]]) -> None:
             raise ValueError(f"{label}: invalid prefix {prefix!r}")
         if category not in CATEGORIES:
             raise ValueError(f"{label}: unknown category {category!r}")
+        if classification not in CLASSIFICATIONS:
+            raise ValueError(f"{label}: unknown classification {classification!r}")
+        if (category == "Django partials") != (classification == "django-6"):
+            raise ValueError(f"{label}: Django partials must use the django-6 classification")
 
         category_index = CATEGORIES.index(category)
         if category_index < last_category:
@@ -108,10 +133,21 @@ def validate_catalog(catalog: list[dict[str, Any]]) -> None:
             raise ValueError(f"{label}: body must be a non-empty array of non-empty strings")
 
         markup = "\n".join(body)
-        if MUTATING_ATTRIBUTE_PATTERN.search(markup) and (
-            "<form" not in markup.lower() or "{% csrf_token %}" not in markup
-        ):
-            raise ValueError(f"{label}: mutating forms must include {{% csrf_token %}}")
+        if MUTATING_ATTRIBUTE_PATTERN.search(markup):
+            forms = re.findall(r"<form\b[^>]*>.*?</form>", markup, re.I | re.S)
+            mutating_forms = [form for form in forms if MUTATING_ATTRIBUTE_PATTERN.search(form)]
+            if not mutating_forms or any("{% csrf_token %}" not in form for form in mutating_forms):
+                raise ValueError(f"{label}: mutating forms must include {{% csrf_token %}}")
+            for form in mutating_forms:
+                tag = form[: form.index(">") + 1]
+                action = re.search(r"\baction\s*=\s*([\"'])(.*?)\1", tag, re.I)
+                hx_post = re.search(r"\bhx-post\s*=\s*([\"'])(.*?)\1", tag, re.I)
+                if re.search(r"\bhx-(?:put|patch|delete)\s*=", tag, re.I):
+                    raise ValueError(f"{label}: Django mutations must use a CSRF-safe hx-post form")
+                if not re.search(r"\bmethod\s*=\s*[\"']post[\"']", tag, re.I) or not action:
+                    raise ValueError(f"{label}: mutating forms must include POST method and action")
+                if not hx_post or action.group(2) != hx_post.group(2):
+                    raise ValueError(f"{label}: action and hx-post must match")
         for description, pattern in FORBIDDEN_PATTERNS:
             if pattern.search(markup):
                 raise ValueError(f"{label}: body contains {description}")
@@ -140,9 +176,7 @@ def snippet_preview(body: list[str]) -> str:
     lines = []
     for line in body:
         line = CHOICE_PATTERN.sub(r"\1", line)
-        line = PLACEHOLDER_PATTERN.sub(
-            lambda match: re.sub(r"\\(.)", r"\1", match.group(1)), line
-        )
+        line = PLACEHOLDER_PATTERN.sub(lambda match: re.sub(r"\\(.)", r"\1", match.group(1)), line)
         line = line.replace("$0", "<!-- Add content here. -->")
         lines.append(TABSTOP_PATTERN.sub("", line).rstrip())
     return "\n".join(lines).rstrip()
@@ -160,13 +194,19 @@ def render_docs(catalog: list[dict[str, Any]]) -> str:
         "",
         "Mutating forms include Django's CSRF token. The examples use HTMX syntax shared by",
         "the supported HTMX 2 and HTMX 4 catalogs.",
+        "See [Core Django response contracts](../how-to/django-response-contracts.md) for",
+        "matching view and response examples.",
         "",
         "## Prefixes",
         "",
-        "| Prefix | Description |",
-        "| --- | --- |",
+        "| Prefix | Classification | Description |",
+        "| --- | --- | --- |",
     ]
-    lines.extend(f"| `{entry['prefix']}` | {entry['description']} |" for entry in catalog)
+    lines.extend(
+        f"| `{entry['prefix']}` | {CLASSIFICATIONS[entry['classification']]} | "
+        f"{entry['description']} |"
+        for entry in catalog
+    )
 
     for category in CATEGORIES:
         lines.extend(("", f"## {category}"))
@@ -179,6 +219,8 @@ def render_docs(catalog: list[dict[str, Any]]) -> str:
                     f"### `{entry['prefix']}`",
                     "",
                     entry["description"] + ".",
+                    "",
+                    f"**Classification:** {CLASSIFICATIONS[entry['classification']]}",
                     "",
                     "```django",
                     snippet_preview(entry["body"]),

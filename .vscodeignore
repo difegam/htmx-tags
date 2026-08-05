@@ -9,7 +9,10 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
-out/test/**
+esbuild.js
+
+# Only the esbuild bundle in dist/ ships; the tsc build in out/ is for tests.
+out/**
 
 # Git and CI
 .git/**
@@ -31,6 +34,7 @@ tests/**
 examples/**
 docs/**
 design-qa.md
+AGENTS.md
 site/**
 build-data.py
 build-snippets.py

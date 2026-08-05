@@ -20,7 +20,9 @@ npm run package
 npx vsce ls --tree
 ```
 
-The package should include compiled JavaScript, `htmx.catalog.json`, the Django snippets, README, license, icon, banner, and editor screenshots. `.vscodeignore` removes source files, tests, docs, local caches, Python tooling, and Node tooling from the VSIX.
+`vsce package` runs `vscode:prepublish`, which type-checks with `tsc --noEmit` and bundles `src/extension.ts` into a single minified `dist/extension.js` with esbuild (the `vscode` module stays external). The package should include that bundle, `htmx.catalog.json`, the Django snippets, README, license, icon, banner, and editor screenshots. `.vscodeignore` removes source files, the `out/` test build, `esbuild.js`, tests, docs, local caches, Python tooling, and Node tooling from the VSIX.
+
+The `tsc` build in `out/` is used only by the unit and extension-host tests; `test:extension` bundles first because the extension host loads `dist/extension.js` through the manifest `main` field.
 
 ## Refresh presentation assets
 
@@ -32,4 +34,4 @@ Run `npm run capture-screenshots` before packaging when an editor interaction ch
 code --install-extension htmx-tags-django-*.vsix --force
 ```
 
-Open an HTML file and a Django HTML template, then verify `hx-` completion, `data-hx-*` aliases, hover on a known attribute, no hover on an ordinary HTML attribute, diagnostics, and local partial completion.
+Open an HTML file and a Django HTML template, then verify `hx-` completion, `data-hx-*` aliases, hover on a known attribute, no hover on an ordinary HTML attribute, diagnostics, a diagnostic quick fix (`Ctrl/Cmd+.`), local partial completion, and partial rename (`F2`).

@@ -8,6 +8,8 @@ import {
   loadCatalog,
 } from "./catalog.js";
 import { analyzeDocument } from "./diagnostics.js";
+import { computeQuickFixes } from "./quickfixes.js";
+import { evictScan, getScan } from "./scanCache.js";
 import {
   attributeMetadataLabel,
   completionKind,
@@ -22,7 +24,7 @@ import {
 import {
   attributeAtOffset,
   partialAtOffset,
-  scanDocument,
+  partialSpansByName,
   tagAtOffset,
   templatePartialReferenceAtOffset,
   type AttributeToken,
@@ -233,6 +235,19 @@ interface ResolvedPartialDefinition {
   workspacePath: string;
 }
 
+/**
+ * Cache of resolved cross-file template partials keyed by normalized template name.
+ * Template-partial completion and definition run on every keystroke inside an
+ * `include`/`render` string, so without this each request re-globs the workspace and
+ * re-opens every candidate file. The cache is cleared by a file-system watcher on any
+ * HTML or Python change so results never go stale.
+ */
+const templatePartialCache = new Map<string, ResolvedPartialDefinition[]>();
+
+function clearTemplatePartialCache(): void {
+  templatePartialCache.clear();
+}
+
 function escapeGlobSegment(value: string): string {
   return value.replace(/[?*\[\]{}]/g, (character) => {
     if (character === "[") {
@@ -255,6 +270,10 @@ async function resolveTemplatePartials(
   if (basename === undefined || basename === "" || normalized.startsWith("/") || parts.includes("..")) {
     return [];
   }
+  const cached = templatePartialCache.get(normalized);
+  if (cached !== undefined) {
+    return cached;
+  }
   const uris = await vscode.workspace.findFiles(`**/${escapeGlobSegment(basename)}`, undefined, undefined, token);
   const suffix = `/${normalized}`;
   const matches = uris
@@ -267,10 +286,11 @@ async function resolveTemplatePartials(
     }
     const document = await vscode.workspace.openTextDocument(uri);
     const workspacePath = vscode.workspace.asRelativePath(uri, false);
-    for (const definition of scanDocument(document.getText()).partialDefinitions) {
+    for (const definition of getScan(document).partialDefinitions) {
       resolved.push({ document, definition, workspacePath });
     }
   }
+  templatePartialCache.set(normalized, resolved);
   return resolved;
 }
 
@@ -315,7 +335,7 @@ async function provideDefinitions(
   const text = document.getText();
   const offset = document.offsetAt(position);
   if (document.languageId === "django-html") {
-    const scan = scanDocument(text);
+    const scan = getScan(document);
     const reference = scan.partialReferences.find(
       (partial) => offset >= partial.nameStart && offset <= partial.nameEnd,
     );
@@ -467,7 +487,7 @@ async function provideCompletions(
   }
   const text = document.getText();
   const offset = document.offsetAt(position);
-  const scan = scanDocument(text);
+  const scan = getScan(document);
   if (document.languageId === "django-html") {
     const templatePartials = await templatePartialCompletionItems(document, offset, token);
     if (templatePartials !== undefined) {
@@ -597,7 +617,7 @@ function provideHover(
     return undefined;
   }
   const offset = document.offsetAt(position);
-  const scan = scanDocument(document.getText());
+  const scan = getScan(document);
   const attribute = attributeAtOffset(scan, offset);
   if (attribute !== undefined && offset >= attribute.nameStart && offset <= attribute.nameEnd) {
     const resolved = catalog.resolve(attribute.name);
@@ -639,10 +659,121 @@ function provideHover(
   return undefined;
 }
 
+function partialNameRange(document: vscode.TextDocument, position: vscode.Position): vscode.Range | undefined {
+  if (document.languageId !== "django-html") {
+    return undefined;
+  }
+  const scan = getScan(document);
+  const target = partialAtOffset(scan, document.offsetAt(position));
+  if (target === undefined) {
+    return undefined;
+  }
+  return new vscode.Range(document.positionAt(target.nameStart), document.positionAt(target.nameEnd));
+}
+
+function provideReferences(
+  document: vscode.TextDocument,
+  position: vscode.Position,
+  context: vscode.ReferenceContext,
+): vscode.Location[] | undefined {
+  if (document.languageId !== "django-html") {
+    return undefined;
+  }
+  const scan = getScan(document);
+  const target = partialAtOffset(scan, document.offsetAt(position));
+  if (target === undefined) {
+    return undefined;
+  }
+  const spans = partialSpansByName(scan, target.name).filter(
+    (span) => context.includeDeclaration || span.kind !== "definition",
+  );
+  return spans.map(
+    (span) => new vscode.Location(document.uri, new vscode.Range(document.positionAt(span.start), document.positionAt(span.end))),
+  );
+}
+
+function provideRenameEdits(
+  document: vscode.TextDocument,
+  position: vscode.Position,
+  newName: string,
+): vscode.WorkspaceEdit | undefined {
+  if (document.languageId !== "django-html") {
+    return undefined;
+  }
+  if (!/^[\w-]+$/.test(newName)) {
+    throw new Error("A Django partial name may only contain letters, numbers, underscores, and hyphens.");
+  }
+  const scan = getScan(document);
+  const target = partialAtOffset(scan, document.offsetAt(position));
+  if (target === undefined) {
+    return undefined;
+  }
+  const edit = new vscode.WorkspaceEdit();
+  for (const span of partialSpansByName(scan, target.name)) {
+    edit.replace(
+      document.uri,
+      new vscode.Range(document.positionAt(span.start), document.positionAt(span.end)),
+      newName,
+    );
+  }
+  return edit;
+}
+
+function provideCodeActions(
+  catalog: CatalogIndex,
+  document: vscode.TextDocument,
+  context: vscode.CodeActionContext,
+): vscode.CodeAction[] {
+  const relevant = context.diagnostics.filter(
+    (diagnostic): diagnostic is vscode.Diagnostic & { code: string } =>
+      diagnostic.source === DIAGNOSTIC_SOURCE && typeof diagnostic.code === "string",
+  );
+  if (relevant.length === 0) {
+    return [];
+  }
+  const scan = getScan(document);
+  const diagnosticLikes = relevant.map((diagnostic) => ({
+    code: diagnostic.code,
+    message: diagnostic.message,
+    start: document.offsetAt(diagnostic.range.start),
+    end: document.offsetAt(diagnostic.range.end),
+  }));
+  return computeQuickFixes(document.getText(), diagnosticLikes, catalog, scan).map((fix) => {
+    const action = new vscode.CodeAction(fix.title, vscode.CodeActionKind.QuickFix);
+    const edit = new vscode.WorkspaceEdit();
+    for (const change of fix.edits) {
+      edit.replace(
+        document.uri,
+        new vscode.Range(document.positionAt(change.start), document.positionAt(change.end)),
+        change.newText,
+      );
+    }
+    action.edit = edit;
+    action.diagnostics = [relevant[fix.diagnosticIndex]];
+    if (fix.isPreferred === true) {
+      action.isPreferred = true;
+    }
+    return action;
+  });
+}
+
 export function activate(context: vscode.ExtensionContext): void {
-  const catalog = loadCatalog(context.asAbsolutePath("htmx.catalog.json"));
+  let catalog: CatalogIndex;
+  try {
+    catalog = loadCatalog(context.asAbsolutePath("htmx.catalog.json"));
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    void vscode.window.showErrorMessage(
+      `HTMX Tags could not load its catalog and is disabled for this session: ${detail}`,
+    );
+    return;
+  }
   const diagnostics = vscode.languages.createDiagnosticCollection(DIAGNOSTIC_SOURCE);
   const timers = new Map<string, NodeJS.Timeout>();
+  const partialWatcher = vscode.workspace.createFileSystemWatcher("**/*.{html,py}");
+  partialWatcher.onDidChange(clearTemplatePartialCache);
+  partialWatcher.onDidCreate(clearTemplatePartialCache);
+  partialWatcher.onDidDelete(clearTemplatePartialCache);
 
   const updateDiagnostics = (document: vscode.TextDocument): void => {
     if (!DOCUMENT_SELECTOR.some((selector) => typeof selector !== "string" && selector.language === document.languageId)) {
@@ -652,8 +783,13 @@ export function activate(context: vscode.ExtensionContext): void {
       diagnostics.delete(document.uri);
       return;
     }
-    const entries = analyzeDocument(document.getText(), document.languageId, catalog, versionMode(document)).map(
-      (issue) => {
+    const entries = analyzeDocument(
+      document.getText(),
+      document.languageId,
+      catalog,
+      versionMode(document),
+      getScan(document),
+    ).map((issue) => {
         const diagnostic = new vscode.Diagnostic(
           new vscode.Range(document.positionAt(issue.start), document.positionAt(issue.end)),
           issue.message,
@@ -699,6 +835,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     diagnostics,
+    partialWatcher,
     vscode.languages.registerCompletionItemProvider(
       DOCUMENT_SELECTOR,
       {
@@ -734,6 +871,30 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerHoverProvider(DOCUMENT_SELECTOR, {
       provideHover: (document, position) => provideHover(catalog, document, position),
     }),
+    vscode.languages.registerCodeActionsProvider(
+      DOCUMENT_SELECTOR,
+      {
+        provideCodeActions: (document, _range, context) => provideCodeActions(catalog, document, context),
+      },
+      { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] },
+    ),
+    vscode.languages.registerReferenceProvider(
+      { language: "django-html" },
+      { provideReferences: (document, position, context) => provideReferences(document, position, context) },
+    ),
+    vscode.languages.registerRenameProvider(
+      { language: "django-html" },
+      {
+        provideRenameEdits: (document, position, newName) => provideRenameEdits(document, position, newName),
+        prepareRename: (document, position) => {
+          const range = partialNameRange(document, position);
+          if (range === undefined) {
+            throw new Error("Only Django partial names can be renamed here.");
+          }
+          return range;
+        },
+      },
+    ),
     vscode.commands.registerCommand(COPY_EXAMPLE_COMMAND, copyExample),
     vscode.commands.registerCommand(OPEN_SETTINGS_COMMAND, () =>
       vscode.commands.executeCommand("workbench.action.openSettings", "@ext:difegam.htmx-tags-django"),
@@ -747,6 +908,7 @@ export function activate(context: vscode.ExtensionContext): void {
         clearTimeout(timer);
         timers.delete(key);
       }
+      evictScan(document);
       diagnostics.delete(document.uri);
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {

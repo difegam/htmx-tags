@@ -21,7 +21,9 @@ Django template support uses the [Django extension](https://marketplace.visualst
 - Use the same help with `data-hx-*` aliases, `hx-on:*`, response targets, and HTMX 4 modifiers.
 - Hover for concise documentation, version availability, and official HTMX links.
 - Catch clear HTMX typos and invalid documented values without warning on ordinary HTML or Django expressions.
+- Apply one-click quick fixes for HTMX typos, deprecated attributes, invalid documented values, and unknown partials.
 - Complete and navigate Django 6 partial tags locally or through static `template.html#partial` references.
+- Rename a Django partial or find all of its references across the current template.
 - Insert Django-ready GET, CSRF-safe POST, delete, search, infinite scroll, and partial snippets.
 
 ## Editor experience
@@ -50,6 +52,8 @@ Django template support uses the [Django extension](https://marketplace.visualst
 | --- | --- |
 | ![HTMX and Django diagnostics](images/diagnostics.png) | ![Django partial completion](images/partials.png) |
 
+Every diagnostic ships a quick fix (the `Ctrl/Cmd+.` lightbulb): a misspelled `hx-` attribute suggests its nearest catalog name, a deprecated attribute offers its documented successor, an invalid documented value offers the allowed values, and an unknown partial offers a matching name or a `{% partialdef %}` stub.
+
 ## Built for Django templates
 
 Definitions in the current template are offered after `{% partial `:
@@ -62,7 +66,7 @@ Definitions in the current template are offered after `{% partial `:
 {% partial result_card %}
 ```
 
-Go to Definition and Peek Definition jump from `{% partial result_card %}` to its local definition. Static cross-template references also complete and navigate from Django includes and common Python APIs:
+Go to Definition and Peek Definition jump from `{% partial result_card %}` to its local definition. Find All References lists every use of a partial in the file, and Rename Symbol (`F2`) updates a partial's definition and all of its references together. Static cross-template references also complete and navigate from Django includes and common Python APIs:
 
 ```django
 {% include "results.html#result_card" %}

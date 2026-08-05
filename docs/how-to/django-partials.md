@@ -30,6 +30,10 @@ After `{% partial `, completion offers names defined in the current file. Hoveri
 
 Typing after `{%` also offers `partialdef`, `partialdef … inline`, `partial`, and `endpartialdef` tag completions.
 
+## Rename and find references
+
+With the cursor on a partial name, Find All References (`Shift+F12`) lists the `partialdef` definition and every `{% partial %}` use in the file, and Rename Symbol (`F2`) rewrites the definition and all of its references together. Both work from either a definition or a reference and stay within the current template.
+
 ## Reference a partial in another template
 
 Completion after `#` reads definitions from matching workspace templates:
@@ -46,7 +50,7 @@ return render(request, "results/cards.html#result_card", context)
 
 ## Diagnostics
 
-The extension warns about duplicate `{% partialdef name %}` definitions and references that cannot be resolved in the same file. It ignores partial-looking text in HTML comments, Django comments, and `{% verbatim %}` blocks.
+The extension warns about duplicate `{% partialdef name %}` definitions and references that cannot be resolved in the same file. It ignores partial-looking text in HTML comments, Django comments, `{% verbatim %}` blocks, and `<script>`/`<style>` bodies. The quick fix for an unresolved reference offers the nearest defined partial name or a `{% partialdef %}` stub appended to the file.
 
 !!! note "Deliberate limit"
 

@@ -8,6 +8,8 @@ Confirm the document language mode is **HTML** or **Django HTML** and the extens
 
 If ordinary HTML attributes do not show HTMX hover text, that is expected: unrecognized attributes intentionally produce no HTMX hover, warning, or log noise.
 
+If activation shows a message that the catalog could not be loaded, the packaged `htmx.catalog.json` is missing or unreadable; reinstall the extension. The extension deliberately disables its providers for that session rather than failing silently.
+
 ## Missing `data-hx-*` suggestions
 
 Start the attribute prefix with `data-` or `data-hx`. The default list intentionally contains canonical `hx-*` names only, so aliases do not double every completion result.

@@ -15,7 +15,8 @@ def _read_json(path: Path) -> dict:
 def test_runtime_provider_manifest() -> None:
     manifest = _read_json(ROOT / "package.json")
     assert "html" not in manifest["contributes"]
-    assert manifest["main"] == "./out/extension.js"
+    assert manifest["main"] == "./dist/extension.js"
+    assert manifest["scripts"]["vscode:prepublish"] == "npm run check-types && npm run bundle"
     assert manifest["displayName"] == "HTMX Tags for Django"
     assert "onLanguage:html" in manifest["activationEvents"]
     assert "onLanguage:django-html" in manifest["activationEvents"]
@@ -51,6 +52,13 @@ def test_snippet_build_sources_are_excluded_from_vsix() -> None:
     ignored = (ROOT / ".vscodeignore").read_text(encoding="utf-8").splitlines()
     assert "build-snippets.py" in ignored
     assert "snippets/*.source.json" in ignored
+
+
+def test_unbundled_build_output_is_excluded_from_vsix() -> None:
+    ignored = (ROOT / ".vscodeignore").read_text(encoding="utf-8").splitlines()
+    assert "out/**" in ignored
+    assert "src/**" in ignored
+    assert "esbuild.js" in ignored
 
 
 def test_catalog_shape_and_version_union() -> None:

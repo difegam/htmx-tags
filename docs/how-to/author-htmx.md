@@ -57,3 +57,13 @@ The catalog stores only `hx-*`; aliases have identical completion, hover, and di
 ```
 
 `hx-target-*` response-target syntax is catalogued as HTMX 2 extension syntax. `hx-status:*` is HTMX 4 syntax. Select a version mode if you want those differences surfaced as editor hints.
+
+## Fix a diagnostic
+
+Place the cursor on an underlined HTMX diagnostic and open the quick-fix menu with `Ctrl/Cmd+.` (or the lightbulb). Each diagnostic offers a targeted edit:
+
+- A misspelled attribute such as `hx-methd` suggests the nearest catalog name (`hx-method`) and preserves a `data-` prefix.
+- A deprecated attribute offers its documented successor, for example `hx-vars` to `hx-vals`.
+- An invalid documented value offers each allowed value for the attribute.
+
+The preferred fix is highlighted first, so `Ctrl/Cmd+.` then `Enter` applies the most likely correction.

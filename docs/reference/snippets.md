@@ -7,33 +7,35 @@ Type a prefix to insert the snippet, then move through its editable placeholders
 
 Mutating forms include Django's CSRF token. The examples use HTMX syntax shared by
 the supported HTMX 2 and HTMX 4 catalogs.
+See [Core Django response contracts](../how-to/django-response-contracts.md) for
+matching view and response examples.
 
 ## Prefixes
 
-| Prefix | Description |
-| --- | --- |
-| `htmx-get` | Django URL-backed HTMX GET button |
-| `htmx-post` | CSRF-safe Django form submitted through HTMX |
-| `htmx-delete` | CSRF-safe Django delete form submitted through POST |
-| `htmx-search` | Debounced Django HTMX search input |
-| `htmx-form-validation` | Django form with server-rendered inline validation |
-| `htmx-file-upload` | CSRF-safe multipart file upload with a status target |
-| `htmx-bulk-actions` | CSRF-safe bulk action form for Django objects |
-| `htmx-dependent-dropdown` | Django select that loads options for a dependent field |
-| `htmx-infinite` | Load the next Django page when revealed |
-| `htmx-poll` | Poll a Django view until work is complete |
-| `htmx-lazy` | Load a Django fragment when its placeholder appears |
-| `htmx-boost-nav` | Progressively enhance Django navigation with history updates |
-| `htmx-progress` | Poll server-rendered progress for a Django task |
-| `htmx-click-to-edit` | Replace a Django object summary with an edit form |
-| `htmx-table-row` | Replace a Django table row with server-rendered editing controls |
-| `htmx-modal` | Load an accessible native dialog from a Django view |
-| `htmx-tabs` | Load server-rendered tabs and selected state |
-| `htmx-oob-swap` | Update a second region from a Django HTMX response |
-| `htmx-toast` | Append an accessible notification from an HTMX response |
-| `partialdef` | Define a Django 6 template partial |
-| `partialdef-inline` | Define and render an inline Django 6 template partial |
-| `partial` | Render a same-file Django 6 template partial |
+| Prefix | Classification | Description |
+| --- | --- | --- |
+| `htmx-get` | Common | Django URL-backed HTMX GET button |
+| `htmx-post` | Common | CSRF-safe Django form submitted through HTMX |
+| `htmx-delete` | Common | CSRF-safe Django delete form submitted through POST |
+| `htmx-search` | Common | Debounced Django HTMX search input |
+| `htmx-form-validation` | Common | Django form replaced with server-rendered validation state |
+| `htmx-file-upload` | Curated recipe | CSRF-safe multipart file upload with a status target |
+| `htmx-bulk-actions` | Curated recipe | CSRF-safe bulk action form for Django objects |
+| `htmx-dependent-dropdown` | Curated recipe | Django select that loads options for a dependent field |
+| `htmx-infinite` | Common | Load the next Django page when revealed |
+| `htmx-poll` | Curated recipe | Poll a Django view until work is complete |
+| `htmx-lazy` | Common | Load a Django fragment when its placeholder appears |
+| `htmx-boost-nav` | Curated recipe | Progressively enhance Django navigation with history updates |
+| `htmx-progress` | Curated recipe | Poll server-rendered progress for a Django task |
+| `htmx-click-to-edit` | Common | Replace a Django object summary with an edit form |
+| `htmx-table-row` | Curated recipe | Replace a Django table row with server-rendered editing controls |
+| `htmx-dialog` | Curated recipe | Load a script-free non-modal dialog from a Django view |
+| `htmx-tabs` | Curated recipe | Replace server-rendered tabs and selected state |
+| `htmx-oob-swap` | Common | Update a second region from a Django HTMX response |
+| `htmx-toast` | Curated recipe | Append an accessible notification from an HTMX response |
+| `partialdef` | Django 6 | Define a Django 6 template partial |
+| `partialdef-inline` | Django 6 | Define and render an inline Django 6 template partial |
+| `partial` | Django 6 | Render a same-file Django 6 template partial |
 
 ## Requests and forms
 
@@ -41,8 +43,10 @@ the supported HTMX 2 and HTMX 4 catalogs.
 
 Django URL-backed HTMX GET button.
 
+**Classification:** Common
+
 ```django
-<button hx-get="{% url 'view-name' %}" hx-target="#content" hx-swap="innerHTML">
+<button type="button" hx-get="{% url 'view-name' %}" hx-target="#content" hx-swap="innerHTML">
   Load
 </button>
 ```
@@ -53,8 +57,12 @@ Django URL-backed HTMX GET button.
 
 CSRF-safe Django form submitted through HTMX.
 
+**Classification:** Common
+
 ```django
-<form hx-post="{% url 'view-name' %}" hx-target="#content" hx-swap="innerHTML">
+<form method="post" action="{% url 'view-name' %}"
+      hx-post="{% url 'view-name' %}"
+      hx-target="#content" hx-swap="innerHTML">
   {% csrf_token %}
   <!-- Add content here. -->
 </form>
@@ -66,8 +74,11 @@ CSRF-safe Django form submitted through HTMX.
 
 CSRF-safe Django delete form submitted through POST.
 
+**Classification:** Common
+
 ```django
-<form hx-post="{% url 'delete-view' object.pk %}"
+<form method="post" action="{% url 'delete-view' object.pk %}"
+      hx-post="{% url 'delete-view' object.pk %}"
       hx-confirm="Are you sure?"
       hx-target="closest .item"
       hx-swap="outerHTML">
@@ -82,10 +93,12 @@ CSRF-safe Django delete form submitted through POST.
 
 Debounced Django HTMX search input.
 
+**Classification:** Common
+
 ```django
 <input type="search" name="q"
        hx-get="{% url 'search-view' %}"
-       hx-trigger="keyup changed delay:300ms"
+       hx-trigger="input changed delay:300ms, search"
        hx-target="#results">
 ```
 
@@ -93,48 +106,54 @@ Debounced Django HTMX search input.
 
 ### `htmx-form-validation`
 
-Django form with server-rendered inline validation.
+Django form replaced with server-rendered validation state.
+
+**Classification:** Common
 
 ```django
-<form hx-post="{% url 'validate-view' %}"
-      hx-trigger="change delay:300ms"
-      hx-target="#form-errors"
-      hx-swap="innerHTML">
+<form method="post" action="{% url 'validate-view' %}"
+      hx-post="{% url 'validate-view' %}"
+      hx-target="this" hx-swap="outerHTML">
   {% csrf_token %}
   {{ form.as_p }}
-  <div id="form-errors" role="status" aria-live="polite"></div>
   <button type="submit">Save</button>
 </form>
 ```
 
-**Endpoint or context:** The validation view returns rendered field or form errors for the form-errors target.
+**Endpoint or context:** The view returns the complete bound form with HTTP 200 when invalid, or a complete success fragment when valid.
 
 ### `htmx-file-upload`
 
 CSRF-safe multipart file upload with a status target.
 
+**Classification:** Curated recipe
+
 ```django
-<form hx-post="{% url 'upload-view' %}"
+<form method="post" action="{% url 'upload-view' %}" enctype="multipart/form-data"
+      hx-post="{% url 'upload-view' %}"
       hx-encoding="multipart/form-data"
       hx-target="#upload-result"
-      hx-swap="innerHTML">
+      hx-swap="innerHTML" hx-indicator="#upload-indicator">
   {% csrf_token %}
   <label for="upload-file">Choose a file</label>
   <input id="upload-file" type="file" name="file" required>
   <button type="submit">Upload</button>
-  <span class="htmx-indicator" role="status">Uploading…</span>
+  <span id="upload-indicator" class="htmx-indicator" role="status">Uploading…</span>
 </form>
 <div id="upload-result" aria-live="polite"></div>
 ```
 
-**Endpoint or context:** The upload view validates the file and returns success or error markup for the upload-result target.
+**Endpoint or context:** The upload view reads request.FILES, validates the file, and returns success or error markup for the upload-result target.
 
 ### `htmx-bulk-actions`
 
 CSRF-safe bulk action form for Django objects.
 
+**Classification:** Curated recipe
+
 ```django
-<form hx-post="{% url 'bulk-view' %}"
+<form method="post" action="{% url 'bulk-view' %}"
+      hx-post="{% url 'bulk-view' %}"
       hx-target="#items-body"
       hx-swap="outerHTML">
   {% csrf_token %}
@@ -159,6 +178,8 @@ CSRF-safe bulk action form for Django objects.
 
 Django select that loads options for a dependent field.
 
+**Classification:** Curated recipe
+
 ```django
 <label for="parent-select">Category</label>
 <select id="parent-select" name="category"
@@ -180,12 +201,17 @@ Django select that loads options for a dependent field.
 
 Load the next Django page when revealed.
 
+**Classification:** Common
+
 ```django
-<div hx-get="?page={{ page_obj.next_page_number }}"
-     hx-trigger="revealed"
-     hx-swap="afterend">
-  Loading…
-</div>
+{% if page_obj.has_next %}
+  <div hx-get="?page={{ page_obj.next_page_number }}"
+       hx-trigger="revealed"
+       hx-target="this" hx-swap="outerHTML"
+       role="status">
+    Loading…
+  </div>
+{% endif %}
 ```
 
 **Endpoint or context:** The list view returns the next result fragment followed by a new next-page trigger when another page exists.
@@ -193,6 +219,8 @@ Load the next Django page when revealed.
 ### `htmx-poll`
 
 Poll a Django view until work is complete.
+
+**Classification:** Curated recipe
 
 ```django
 <div hx-get="{% url 'status-view' task.pk %}"
@@ -210,6 +238,8 @@ Poll a Django view until work is complete.
 
 Load a Django fragment when its placeholder appears.
 
+**Classification:** Common
+
 ```django
 <section hx-get="{% url 'fragment-view' %}"
          hx-trigger="load"
@@ -226,14 +256,13 @@ Load a Django fragment when its placeholder appears.
 
 Progressively enhance Django navigation with history updates.
 
+**Classification:** Curated recipe
+
 ```django
-<nav hx-boost="true"
-     hx-target="#main-content"
-     hx-select="#main-content"
-     hx-swap="outerHTML"
-     hx-push-url="true"
-     aria-label="Primary">
-  <a href="{% url 'home' %}">Home</a>
+<nav aria-label="Primary">
+  <a href="{% url 'home' %}" hx-boost="true"
+     hx-target="#main-content" hx-select="#main-content"
+     hx-swap="outerHTML" hx-push-url="true">Home</a>
   <!-- Add content here. -->
 </nav>
 <main id="main-content" tabindex="-1"></main>
@@ -244,6 +273,8 @@ Progressively enhance Django navigation with history updates.
 ### `htmx-progress`
 
 Poll server-rendered progress for a Django task.
+
+**Classification:** Curated recipe
 
 ```django
 <div hx-get="{% url 'progress-view' task.pk %}"
@@ -264,10 +295,12 @@ Poll server-rendered progress for a Django task.
 
 Replace a Django object summary with an edit form.
 
+**Classification:** Common
+
 ```django
 <article hx-target="this" hx-swap="outerHTML">
   <h2>{{ object }}</h2>
-  <button hx-get="{% url 'edit-view' object.pk %}">Edit</button>
+  <button type="button" hx-get="{% url 'edit-view' object.pk %}">Edit</button>
 </article>
 ```
 
@@ -277,53 +310,68 @@ Replace a Django object summary with an edit form.
 
 Replace a Django table row with server-rendered editing controls.
 
+**Classification:** Curated recipe
+
 ```django
 <tr id="item-{{ object.pk }}" hx-target="this" hx-swap="outerHTML">
   <th scope="row">{{ object }}</th>
-  <td><button hx-get="{% url 'edit-view' object.pk %}">Edit</button></td>
+  <td><button type="button" hx-get="{% url 'edit-view' object.pk %}">Edit</button></td>
 </tr>
 ```
 
 **Endpoint or context:** The edit view returns a complete replacement row containing a CSRF-protected update form.
 
-### `htmx-modal`
+### `htmx-dialog`
 
-Load an accessible native dialog from a Django view.
+Load a script-free non-modal dialog from a Django view.
+
+**Classification:** Curated recipe
 
 ```django
-<button hx-get="{% url 'dialog-view' object.pk %}"
-        hx-target="#modal"
+<button type="button" hx-get="{% url 'dialog-view' object.pk %}"
+        hx-target="#dialog"
         hx-swap="outerHTML"
-        aria-controls="modal">
+        aria-controls="dialog">
   Open dialog
 </button>
-<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<dialog id="dialog" aria-labelledby="dialog-title"></dialog>
 ```
 
-**Endpoint or context:** The dialog view returns a dialog with the same id, the open attribute, a labelled title, and a native method="dialog" close form.
+**Endpoint or context:** The view returns a dialog with the same id, the open attribute, a labelled title, and a native method="dialog" close form; it is non-modal without showModal().
 
 ### `htmx-tabs`
 
-Load server-rendered tabs and selected state.
+Replace server-rendered tabs and selected state.
+
+**Classification:** Curated recipe
 
 ```django
-<section id="tabs"
-         hx-get="{% url 'tabs-view' %}"
-         hx-trigger="load"
-         hx-target="this"
-         hx-swap="innerHTML"
-         aria-label="Sections">
-  <p role="status">Loading tabs…</p>
+<section id="tabs" aria-label="Sections">
+  <nav role="tablist">
+    <a id="tabs-overview" role="tab" aria-selected="true"
+       aria-controls="tabs-panel"
+       href="{% url 'tabs-view' 'overview' %}"
+       hx-get="{% url 'tabs-view' 'overview' %}"
+       hx-target="#tabs" hx-swap="outerHTML" hx-push-url="true">
+      Overview
+    </a>
+    <!-- Add content here. -->
+  </nav>
+  <div id="tabs-panel" role="tabpanel" aria-labelledby="tabs-overview">
+    {{ tab_content }}
+  </div>
 </section>
 ```
 
-**Endpoint or context:** The tabs view returns the complete tablist and panel markup, including current aria-selected state and GET controls for other tabs.
+**Endpoint or context:** The tabs view returns the complete section with updated tablist, aria-selected state, and panel content.
 
 ## Server responses
 
 ### `htmx-oob-swap`
 
 Update a second region from a Django HTMX response.
+
+**Classification:** Common
 
 ```django
 <section id="summary" hx-swap-oob="true">
@@ -336,6 +384,8 @@ Update a second region from a Django HTMX response.
 ### `htmx-toast`
 
 Append an accessible notification from an HTMX response.
+
+**Classification:** Curated recipe
 
 ```django
 <div id="notifications" hx-swap-oob="beforeend:#notifications">
@@ -351,6 +401,8 @@ Append an accessible notification from an HTMX response.
 
 Define a Django 6 template partial.
 
+**Classification:** Django 6
+
 ```django
 {% partialdef partial_name %}
   <!-- Add content here. -->
@@ -363,6 +415,8 @@ Define a Django 6 template partial.
 
 Define and render an inline Django 6 template partial.
 
+**Classification:** Django 6
+
 ```django
 {% partialdef partial_name inline %}
   <!-- Add content here. -->
@@ -374,6 +428,8 @@ Define and render an inline Django 6 template partial.
 ### `partial`
 
 Render a same-file Django 6 template partial.
+
+**Classification:** Django 6
 
 ```django
 {% partial partial_name %}

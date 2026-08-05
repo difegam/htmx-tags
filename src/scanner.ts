@@ -559,6 +559,30 @@ export function partialAtOffset(
   );
 }
 
+export interface PartialNameSpan extends Span {
+  kind: "definition" | "reference";
+}
+
+/** All same-file definition and reference name spans that share a partial name. */
+export function partialSpansByName(scan: ScanResult, name: string): PartialNameSpan[] {
+  return [
+    ...scan.partialDefinitions
+      .filter((definition) => definition.name === name)
+      .map((definition): PartialNameSpan => ({
+        start: definition.nameStart,
+        end: definition.nameEnd,
+        kind: "definition",
+      })),
+    ...scan.partialReferences
+      .filter((reference) => reference.name === name)
+      .map((reference): PartialNameSpan => ({
+        start: reference.nameStart,
+        end: reference.nameEnd,
+        kind: "reference",
+      })),
+  ];
+}
+
 export function tagAtOffset(scan: ScanResult, offset: number): HtmlTag | undefined {
   return scan.tags.find(
     (tag) => !tag.closing && offset > tag.start && (offset < tag.end || (!tag.terminated && offset === tag.end)),

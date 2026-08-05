@@ -30,6 +30,7 @@ nav = [
         { "Author HTMX" = "how-to/author-htmx.md" },
         { Configuration = "how-to/configuration.md" },
         { "Django Partials" = "how-to/django-partials.md" },
+        { "Django Response Contracts" = "how-to/django-response-contracts.md" },
         { Troubleshooting = "how-to/troubleshooting.md" },
     ] },
     { Operations = [

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  partialSpansByName,
   scanDocument,
   scanTemplatePartialReferences,
   tagAtOffset,
@@ -63,6 +64,16 @@ test("scanner ignores partial-looking text inside script and style blocks", () =
 {% partial card %}`);
   assert.deepEqual(scan.partialDefinitions.map(({ name }) => name), ["card"]);
   assert.deepEqual(scan.partialReferences.map(({ name }) => name), ["card"]);
+});
+
+test("partialSpansByName collects the definition and every same-name reference", () => {
+  const text = `{% partialdef card %}<article></article>{% endpartialdef %}\n{% partial card %}\n{% partial card %}\n{% partial other %}`;
+  const spans = partialSpansByName(scanDocument(text), "card");
+  assert.equal(spans.filter((span) => span.kind === "definition").length, 1);
+  assert.equal(spans.filter((span) => span.kind === "reference").length, 2);
+  for (const span of spans) {
+    assert.equal(text.slice(span.start, span.end), "card");
+  }
 });
 
 test("scanner finds static Django include partial references", () => {

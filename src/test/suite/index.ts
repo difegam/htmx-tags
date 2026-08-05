@@ -42,6 +42,12 @@ function markdownOf(value: unknown): string {
       : "";
 }
 
+type RuntimeSnippet = {
+  body: string[];
+  description: string;
+  prefix: string;
+};
+
 async function valuesAt(content: string, marker: string): Promise<vscode.CompletionItem[]> {
   const document = await vscode.workspace.openTextDocument({ language: "html", content });
   const offset = content.indexOf(marker) + marker.length;
@@ -206,4 +212,19 @@ export async function run(): Promise<void> {
   const invalid = await vscode.workspace.openTextDocument({ language: "html", content: '<div hx-nope="x">' });
   await new Promise((resolve) => setTimeout(resolve, 200));
   assert.ok(vscode.languages.getDiagnostics(invalid.uri).some((diagnostic) => diagnostic.source === "htmx-tags"));
+
+  const snippetBytes = await vscode.workspace.fs.readFile(
+    vscode.Uri.joinPath(vscode.Uri.file(extension.extensionPath), "snippets", "django-htmx.json"),
+  );
+  const snippets = JSON.parse(new TextDecoder().decode(snippetBytes)) as Record<string, RuntimeSnippet>;
+  assert.equal(Object.keys(snippets).length, 22);
+  const snippetDocument = await vscode.workspace.openTextDocument({ language: "django-html", content: "" });
+  const snippetEditor = await vscode.window.showTextDocument(snippetDocument);
+  for (const [name, snippet] of Object.entries(snippets)) {
+    const end = snippetDocument.positionAt(snippetDocument.getText().length);
+    assert.ok(await snippetEditor.edit((edit) => edit.delete(new vscode.Range(new vscode.Position(0, 0), end))));
+    snippetEditor.selection = new vscode.Selection(0, 0, 0, 0);
+    assert.ok(await snippetEditor.insertSnippet(new vscode.SnippetString(snippet.body.join("\n"))));
+    assert.doesNotMatch(snippetDocument.getText(), /\$\{|\$\d+/, `${name} left an unresolved snippet placeholder`);
+  }
 }
