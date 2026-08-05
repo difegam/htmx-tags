@@ -1,0 +1,370 @@
+[
+  {
+    "name": "HTMX GET",
+    "prefix": "htmx-get",
+    "category": "Requests and forms",
+    "classification": "common",
+    "description": "Django URL-backed HTMX GET button",
+    "body": [
+      "<button type=\"button\" hx-get=\"{% url '${1:view-name}' %}\" hx-target=\"${2:#content}\" hx-swap=\"${3:innerHTML}\">",
+      "  ${4:Load}",
+      "</button>"
+    ],
+    "usage": "The view returns the HTML fragment that should replace the selected target."
+  },
+  {
+    "name": "HTMX CSRF-safe POST",
+    "prefix": "htmx-post",
+    "category": "Requests and forms",
+    "classification": "common",
+    "description": "CSRF-safe Django form submitted through HTMX",
+    "body": [
+      "<form method=\"post\" action=\"{% url '${1:view-name}' %}\"",
+      "      hx-post=\"{% url '${1:view-name}' %}\"",
+      "      hx-target=\"${2:#content}\" hx-swap=\"${3:innerHTML}\">",
+      "  {% csrf_token %}",
+      "  $0",
+      "</form>"
+    ],
+    "usage": "The POST view validates the submitted fields and returns the replacement fragment for the selected target."
+  },
+  {
+    "name": "HTMX DELETE",
+    "prefix": "htmx-delete",
+    "category": "Requests and forms",
+    "classification": "common",
+    "description": "CSRF-safe Django delete form submitted through POST",
+    "body": [
+      "<form method=\"post\" action=\"{% url '${1:delete-view}' ${2:object.pk} %}\"",
+      "      hx-post=\"{% url '${1:delete-view}' ${2:object.pk} %}\"",
+      "      hx-confirm=\"${3:Are you sure?}\"",
+      "      hx-target=\"${4:closest .item}\"",
+      "      hx-swap=\"outerHTML\">",
+      "  {% csrf_token %}",
+      "  <button type=\"submit\">${5:Delete}</button>",
+      "</form>"
+    ],
+    "usage": "The POST view performs the deletion and returns either an empty response or replacement markup for the item."
+  },
+  {
+    "name": "HTMX Search",
+    "prefix": "htmx-search",
+    "category": "Requests and forms",
+    "classification": "common",
+    "description": "Debounced Django HTMX search input",
+    "body": [
+      "<input type=\"search\" name=\"${1:q}\"",
+      "       hx-get=\"{% url '${2:search-view}' %}\"",
+      "       hx-trigger=\"input changed delay:${3:300ms}, search\"",
+      "       hx-target=\"${4:#results}\">"
+    ],
+    "usage": "The search view reads the input value and returns the current result-list fragment."
+  },
+  {
+    "name": "HTMX Form Validation",
+    "prefix": "htmx-form-validation",
+    "category": "Requests and forms",
+    "classification": "common",
+    "description": "Django form replaced with server-rendered validation state",
+    "body": [
+      "<form method=\"post\" action=\"{% url '${1:validate-view}' %}\"",
+      "      hx-post=\"{% url '${1:validate-view}' %}\"",
+      "      hx-target=\"this\" hx-swap=\"outerHTML\">",
+      "  {% csrf_token %}",
+      "  {{ form.as_p }}",
+      "  <button type=\"submit\">${2:Save}</button>",
+      "</form>"
+    ],
+    "usage": "The view returns the complete bound form with HTTP 200 when invalid, or a complete success fragment when valid."
+  },
+  {
+    "name": "HTMX File Upload",
+    "prefix": "htmx-file-upload",
+    "category": "Requests and forms",
+    "classification": "curated",
+    "description": "CSRF-safe multipart file upload with a status target",
+    "body": [
+      "<form method=\"post\" action=\"{% url '${1:upload-view}' %}\" enctype=\"multipart/form-data\"",
+      "      hx-post=\"{% url '${1:upload-view}' %}\"",
+      "      hx-encoding=\"multipart/form-data\"",
+      "      hx-target=\"#${2:upload-result}\"",
+      "      hx-swap=\"innerHTML\" hx-indicator=\"#${3:upload-indicator}\">",
+      "  {% csrf_token %}",
+      "  <label for=\"${4:upload-file}\">${5:Choose a file}</label>",
+      "  <input id=\"${4:upload-file}\" type=\"file\" name=\"${6:file}\" required>",
+      "  <button type=\"submit\">${7:Upload}</button>",
+      "  <span id=\"${3:upload-indicator}\" class=\"htmx-indicator\" role=\"status\">Uploading…</span>",
+      "</form>",
+      "<div id=\"${2:upload-result}\" aria-live=\"polite\"></div>"
+    ],
+    "usage": "The upload view reads request.FILES, validates the file, and returns success or error markup for the upload-result target."
+  },
+  {
+    "name": "HTMX Bulk Actions",
+    "prefix": "htmx-bulk-actions",
+    "category": "Requests and forms",
+    "classification": "curated",
+    "description": "CSRF-safe bulk action form for Django objects",
+    "body": [
+      "<form method=\"post\" action=\"{% url '${1:bulk-view}' %}\"",
+      "      hx-post=\"{% url '${1:bulk-view}' %}\"",
+      "      hx-target=\"#${2:items-body}\"",
+      "      hx-swap=\"outerHTML\">",
+      "  {% csrf_token %}",
+      "  <table>",
+      "    <thead><tr><th scope=\"col\">Select</th><th scope=\"col\">Item</th></tr></thead>",
+      "    <tbody id=\"${2:items-body}\">",
+      "      {% for object in objects %}",
+      "        <tr>",
+      "          <td><input type=\"checkbox\" name=\"selected\" value=\"{{ object.pk }}\" aria-label=\"Select {{ object }}\"></td>",
+      "          <td>{{ object }}</td>",
+      "        </tr>",
+      "      {% endfor %}",
+      "    </tbody>",
+      "  </table>",
+      "  <button type=\"submit\">${3:Apply to selected}</button>",
+      "</form>"
+    ],
+    "usage": "The POST view processes every selected value and returns a complete tbody element with the same id."
+  },
+  {
+    "name": "HTMX Dependent Dropdown",
+    "prefix": "htmx-dependent-dropdown",
+    "category": "Requests and forms",
+    "classification": "curated",
+    "description": "Django select that loads options for a dependent field",
+    "body": [
+      "<label for=\"${1:parent-select}\">${2:Category}</label>",
+      "<select id=\"${1:parent-select}\" name=\"${3:category}\"",
+      "        hx-get=\"{% url '${4:options-view}' %}\"",
+      "        hx-trigger=\"change\"",
+      "        hx-target=\"#${5:dependent-select}\"",
+      "        hx-swap=\"innerHTML\">",
+      "  $0",
+      "</select>",
+      "<label for=\"${5:dependent-select}\">${6:Option}</label>",
+      "<select id=\"${5:dependent-select}\" name=\"${7:option}\"></select>"
+    ],
+    "usage": "The options view reads the selected parent value and returns option elements for the dependent select."
+  },
+  {
+    "name": "HTMX Infinite Scroll",
+    "prefix": "htmx-infinite",
+    "category": "Loading and navigation",
+    "classification": "common",
+    "description": "Load the next Django page when revealed",
+    "body": [
+      "{% if page_obj.has_next %}",
+      "  <div hx-get=\"?page={{ page_obj.next_page_number }}\"",
+      "       hx-trigger=\"revealed\"",
+      "       hx-target=\"this\" hx-swap=\"outerHTML\"",
+      "       role=\"status\">",
+      "    ${1:Loading…}",
+      "  </div>",
+      "{% endif %}"
+    ],
+    "usage": "The list view returns the next result fragment followed by a new next-page trigger when another page exists."
+  },
+  {
+    "name": "HTMX Poll",
+    "prefix": "htmx-poll",
+    "category": "Loading and navigation",
+    "classification": "curated",
+    "description": "Poll a Django view until work is complete",
+    "body": [
+      "<div hx-get=\"{% url '${1:status-view}' ${2:task.pk} %}\"",
+      "     hx-trigger=\"every ${3:5s}\"",
+      "     hx-target=\"this\"",
+      "     hx-swap=\"outerHTML\"",
+      "     role=\"status\" aria-live=\"polite\">",
+      "  ${4:Waiting…}",
+      "</div>"
+    ],
+    "usage": "The status view returns the same polling region while work continues and omits hx-trigger after completion."
+  },
+  {
+    "name": "HTMX Lazy Loading",
+    "prefix": "htmx-lazy",
+    "category": "Loading and navigation",
+    "classification": "common",
+    "description": "Load a Django fragment when its placeholder appears",
+    "body": [
+      "<section hx-get=\"{% url '${1:fragment-view}' %}\"",
+      "         hx-trigger=\"load\"",
+      "         hx-target=\"this\"",
+      "         hx-swap=\"outerHTML\"",
+      "         aria-busy=\"true\">",
+      "  <p class=\"htmx-indicator\" role=\"status\">${2:Loading…}</p>",
+      "</section>"
+    ],
+    "usage": "The fragment view returns the complete replacement section without aria-busy."
+  },
+  {
+    "name": "HTMX Boosted Navigation",
+    "prefix": "htmx-boost-nav",
+    "category": "Loading and navigation",
+    "classification": "curated",
+    "description": "Progressively enhance Django navigation with history updates",
+    "body": [
+      "<nav aria-label=\"${1:Primary}\">",
+      "  <a href=\"{% url '${2:home}' %}\" hx-boost=\"true\"",
+      "     hx-target=\"#${3:main-content}\" hx-select=\"#${3:main-content}\"",
+      "     hx-swap=\"outerHTML\" hx-push-url=\"true\">${4:Home}</a>",
+      "  $0",
+      "</nav>",
+      "<main id=\"${3:main-content}\" tabindex=\"-1\"></main>"
+    ],
+    "usage": "Each linked view returns a normal full page containing the same main-content element, which hx-select extracts."
+  },
+  {
+    "name": "HTMX Progress",
+    "prefix": "htmx-progress",
+    "category": "Loading and navigation",
+    "classification": "curated",
+    "description": "Poll server-rendered progress for a Django task",
+    "body": [
+      "<div hx-get=\"{% url '${1:progress-view}' ${2:task.pk} %}\"",
+      "     hx-trigger=\"every ${3:1s}\"",
+      "     hx-target=\"this\"",
+      "     hx-swap=\"outerHTML\"",
+      "     role=\"status\" aria-live=\"polite\">",
+      "  <label for=\"${4:task-progress}\">${5:Progress}</label>",
+      "  <progress id=\"${4:task-progress}\" value=\"{{ task.progress }}\" max=\"100\">{{ task.progress }}%</progress>",
+      "</div>"
+    ],
+    "usage": "The progress view returns updated markup and omits hx-trigger when the task reaches a terminal state."
+  },
+  {
+    "name": "HTMX Click to Edit",
+    "prefix": "htmx-click-to-edit",
+    "category": "Editing and UI",
+    "classification": "common",
+    "description": "Replace a Django object summary with an edit form",
+    "body": [
+      "<article hx-target=\"this\" hx-swap=\"outerHTML\">",
+      "  <h2>{{ object }}</h2>",
+      "  <button type=\"button\" hx-get=\"{% url '${1:edit-view}' ${2:object.pk} %}\">${3:Edit}</button>",
+      "</article>"
+    ],
+    "usage": "The edit view returns a CSRF-protected form that targets and replaces itself after submission."
+  },
+  {
+    "name": "HTMX Editable Table Row",
+    "prefix": "htmx-table-row",
+    "category": "Editing and UI",
+    "classification": "curated",
+    "description": "Replace a Django table row with server-rendered editing controls",
+    "body": [
+      "<tr id=\"${1:item}-{{ object.pk }}\" hx-target=\"this\" hx-swap=\"outerHTML\">",
+      "  <th scope=\"row\">{{ object }}</th>",
+      "  <td><button type=\"button\" hx-get=\"{% url '${2:edit-view}' ${3:object.pk} %}\">${4:Edit}</button></td>",
+      "</tr>"
+    ],
+    "usage": "The edit view returns a complete replacement row containing a CSRF-protected update form."
+  },
+  {
+    "name": "HTMX Dialog",
+    "prefix": "htmx-dialog",
+    "category": "Editing and UI",
+    "classification": "curated",
+    "description": "Load a script-free non-modal dialog from a Django view",
+    "body": [
+      "<button type=\"button\" hx-get=\"{% url '${1:dialog-view}' ${2:object.pk} %}\"",
+      "        hx-target=\"#${3:dialog}\"",
+      "        hx-swap=\"outerHTML\"",
+      "        aria-controls=\"${3:dialog}\">",
+      "  ${4:Open dialog}",
+      "</button>",
+      "<dialog id=\"${3:dialog}\" aria-labelledby=\"${3:dialog}-title\"></dialog>"
+    ],
+    "usage": "The view returns a dialog with the same id, the open attribute, a labelled title, and a native method=\"dialog\" close form; it is non-modal without showModal()."
+  },
+  {
+    "name": "HTMX Server-driven Tabs",
+    "prefix": "htmx-tabs",
+    "category": "Editing and UI",
+    "classification": "curated",
+    "description": "Replace server-rendered tabs and selected state",
+    "body": [
+      "<section id=\"${1:tabs}\" aria-label=\"${2:Sections}\">",
+      "  <nav role=\"tablist\">",
+      "    <a id=\"${1:tabs}-${3:overview}\" role=\"tab\" aria-selected=\"true\"",
+      "       aria-controls=\"${1:tabs}-panel\"",
+      "       href=\"{% url '${4:tabs-view}' '${3:overview}' %}\"",
+      "       hx-get=\"{% url '${4:tabs-view}' '${3:overview}' %}\"",
+      "       hx-target=\"#${1:tabs}\" hx-swap=\"outerHTML\" hx-push-url=\"true\">",
+      "      ${5:Overview}",
+      "    </a>",
+      "    $0",
+      "  </nav>",
+      "  <div id=\"${1:tabs}-panel\" role=\"tabpanel\" aria-labelledby=\"${1:tabs}-${3:overview}\">",
+      "    {{ tab_content }}",
+      "  </div>",
+      "</section>"
+    ],
+    "usage": "The tabs view returns the complete section with updated tablist, aria-selected state, and panel content."
+  },
+  {
+    "name": "HTMX Out-of-band Swap",
+    "prefix": "htmx-oob-swap",
+    "category": "Server responses",
+    "classification": "common",
+    "description": "Update a second region from a Django HTMX response",
+    "body": [
+      "<section id=\"${1:summary}\" hx-swap-oob=\"true\">",
+      "  ${2:Updated summary}",
+      "</section>"
+    ],
+    "usage": "Return this fragment alongside the primary response; HTMX replaces the existing element with the matching id."
+  },
+  {
+    "name": "HTMX Toast Notification",
+    "prefix": "htmx-toast",
+    "category": "Server responses",
+    "classification": "curated",
+    "description": "Append an accessible notification from an HTMX response",
+    "body": [
+      "<div id=\"${1:notifications}\" hx-swap-oob=\"beforeend:#${1:notifications}\">",
+      "  <p role=\"status\" aria-live=\"polite\">${2:Saved successfully.}</p>",
+      "</div>"
+    ],
+    "usage": "Return this fragment with a primary response to append its status message to the existing notifications region."
+  },
+  {
+    "name": "Django Partial Definition",
+    "prefix": "partialdef",
+    "category": "Django partials",
+    "classification": "django-6",
+    "description": "Define a Django 6 template partial",
+    "body": [
+      "{% partialdef ${1:partial_name} %}",
+      "  $0",
+      "{% endpartialdef %}"
+    ],
+    "usage": "Django 6 registers the named block as a reusable partial in the current template."
+  },
+  {
+    "name": "Django Inline Partial Definition",
+    "prefix": "partialdef-inline",
+    "category": "Django partials",
+    "classification": "django-6",
+    "description": "Define and render an inline Django 6 template partial",
+    "body": [
+      "{% partialdef ${1:partial_name} inline %}",
+      "  $0",
+      "{% endpartialdef %}"
+    ],
+    "usage": "Django 6 registers and renders the named partial at its definition site."
+  },
+  {
+    "name": "Render Django Partial",
+    "prefix": "partial",
+    "category": "Django partials",
+    "classification": "django-6",
+    "description": "Render a same-file Django 6 template partial",
+    "body": [
+      "{% partial ${1:partial_name} %}"
+    ],
+    "usage": "The referenced partial must be defined in the same template or resolved through Django's supported partial syntax."
+  }
+]
