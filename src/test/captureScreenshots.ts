@@ -115,15 +115,20 @@ async function captureStates(): Promise<void> {
   mkdirSync(FRAME_DIR, { recursive: true });
 
   for (const state of STATES) {
+    let ready = false;
     for (let attempt = 0; attempt < 200; attempt++) {
       try {
         if (readFileSync(STATE_FILE, "utf8") === state) {
+          ready = true;
           break;
         }
       } catch {
         // The extension test has not prepared this state yet.
       }
       await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    if (!ready) {
+      throw new Error(`Screenshot state '${state}' was never reported by the extension test`);
     }
     const result = await client.send<{ data: string }>("Page.captureScreenshot", {
       format: "png",

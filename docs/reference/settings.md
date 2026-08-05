@@ -3,7 +3,7 @@
 These VS Code settings are contributed by HTMX Tags for Django.
 
 | Setting | Type | Default | Effect |
-| \--- | --- | --- |
+| --- | --- | --- | --- |
 | `htmxTags.enableCompletion` | boolean | `true` | Enables HTMX attribute/value and Django partial completion. |
 | `htmxTags.enableHover` | boolean | `true` | Enables HTMX and Django partial hover documentation. |
 | `htmxTags.enableValidation` | boolean | `true` | Enables HTMX and same-file Django partial diagnostics. |

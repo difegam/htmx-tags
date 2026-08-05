@@ -202,6 +202,12 @@ def test_write_mode_updates_only_stale_files(tmp_path: Path) -> None:
     assert stale_file.read_text(encoding="utf-8") == "new\n"
 
 
+def test_snippet_preview_unescapes_placeholder_braces() -> None:
+    module = _load_build_snippets_module()
+    body = ["<div hx-get=\"${1:?page={{ page_obj.next_page_number \\}\\}}\">"]
+    assert module.snippet_preview(body) == '<div hx-get="?page={{ page_obj.next_page_number }}">'
+
+
 def test_runtime_snippet_shape_contains_only_vscode_fields() -> None:
     data = json.loads((ROOT / "snippets" / "django-htmx.json").read_text(encoding="utf-8"))
     assert [entry["prefix"] for entry in data.values()] == EXPECTED_PREFIXES

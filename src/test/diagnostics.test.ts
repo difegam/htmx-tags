@@ -20,6 +20,10 @@ test("unknown attributes and closed invalid values warn", () => {
   assert.deepEqual(issues.map((issue) => issue.code), ["unknown-attribute", "invalid-value"]);
 });
 
+test("incomplete quoted values are not validated while typing", () => {
+  assert.deepEqual(analyzeDocument(`<form hx-method="po></form>`, "html", catalog, "compatible"), []);
+});
+
 test("Django expressions bypass literal validation", () => {
   assert.deepEqual(
     analyzeDocument(`<form hx-method="{{ request_method }}"></form>`, "django-html", catalog, "4"),

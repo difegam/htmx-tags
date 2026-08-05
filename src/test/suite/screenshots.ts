@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { existsSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -33,7 +34,8 @@ async function insert(editor: vscode.TextEditor, text: string): Promise<void> {
 
 export async function run(): Promise<void> {
   const extension = vscode.extensions.getExtension("difegam.htmx-tags-django");
-  await extension?.activate();
+  assert.ok(extension, "extension is discoverable");
+  await extension.activate();
   await vscode.workspace.getConfiguration("git").update(
     "openRepositoryInParentFolders",
     "never",

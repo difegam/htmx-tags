@@ -55,6 +55,16 @@ test("scanner finds same-file Django partial definitions and references", () => 
   assert.deepEqual(scan.partialReferences.map(({ name }) => name), ["card"]);
 });
 
+test("scanner ignores partial-looking text inside script and style blocks", () => {
+  const scan = scanDocument(`
+{% partialdef card inline %}<article></article>{% endpartialdef %}
+<script>const t = "{% partial missing %}";</script>
+<style>/* {% partial hidden %} */</style>
+{% partial card %}`);
+  assert.deepEqual(scan.partialDefinitions.map(({ name }) => name), ["card"]);
+  assert.deepEqual(scan.partialReferences.map(({ name }) => name), ["card"]);
+});
+
 test("scanner finds static Django include partial references", () => {
   const text = `
 {% include "cards/item.html#result-card" with item=item %}

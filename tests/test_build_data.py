@@ -109,7 +109,7 @@ def test_iter_attribute_docs_wraps_bad_zip_errors() -> None:
 
 def test_extract_html_example_is_bounded_and_attribute_specific() -> None:
     module = _load_build_data_module()
-    body = """```html\n<div hx-post=\"/wrong\"></div>\n```\n```html\n<button hx-get=\"/items\">Load</button>\n```"""
+    body = """```html\n<div hx-post=\"/wrong\"></div>\n```\n```html\n<button hx-get=\"/items\">Load</button>\n```"""  # noqa: E501
     assert module.extract_html_example(body, "hx-get") == '<button hx-get="/items">Load</button>'
     assert module.extract_html_example("```html\n<div></div>\n```", "hx-get") is None
 
@@ -254,7 +254,7 @@ def test_catalog_serialization_is_deterministic(monkeypatch: pytest.MonkeyPatch)
 """,
             "htmx/www/content/attributes/hx-get.md": (
                 '+++\ntitle = "hx-get"\ndescription = "GET"\n+++\nBody.'
-            )
+            ),
         }
     )
     v4 = _archive(

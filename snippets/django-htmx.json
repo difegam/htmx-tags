@@ -116,7 +116,7 @@
     "prefix": "htmx-infinite",
     "description": "Load the next Django page when revealed",
     "body": [
-      "<div hx-get=\"${1:?page={{ page_obj.next_page_number }}}\"",
+      "<div hx-get=\"${1:?page={{ page_obj.next_page_number \\}\\}}\"",
       "     hx-trigger=\"revealed\"",
       "     hx-swap=\"afterend\">",
       "  ${2:Loading…}",

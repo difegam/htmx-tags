@@ -64,6 +64,7 @@ export function analyzeDocument(
     if (
       entry?.strictValues === true &&
       attribute.value !== undefined &&
+      attribute.valueClosed === true &&
       attribute.value.trim() !== "" &&
       !containsTemplateExpression(attribute.value)
     ) {

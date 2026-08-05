@@ -197,6 +197,16 @@ function maskIgnoredDjangoRegions(text: string): string {
       cursor = end;
       continue;
     }
+    const rawText = /^<(script|style)\b[^>]*>/i.exec(text.slice(cursor));
+    if (rawText !== null) {
+      const contentStart = cursor + rawText[0].length;
+      const closing = new RegExp(`<\\/${rawText[1]}\\s*>`, "i");
+      const match = closing.exec(text.slice(contentStart));
+      const end = match === null ? text.length : contentStart + match.index + match[0].length;
+      mask(cursor, end);
+      cursor = end;
+      continue;
+    }
     if (text.startsWith("{%", cursor)) {
       const tagEnd = findEnd(text, cursor + 2, "%}");
       const tag = text.slice(cursor, tagEnd);

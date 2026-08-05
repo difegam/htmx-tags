@@ -40,7 +40,7 @@ FORBIDDEN_PATTERNS = (
     ),
     ("excluded SSE or WebSocket attributes", re.compile(r"\bhx-(?:sse|ws)\b", re.I)),
 )
-PLACEHOLDER_PATTERN = re.compile(r"\$\{\d+:([^}]*)\}")
+PLACEHOLDER_PATTERN = re.compile(r"\$\{\d+:((?:\\.|[^}])*)\}")
 CHOICE_PATTERN = re.compile(r"\$\{\d+\|([^,|}]+)(?:,[^|}]*)?\|\}")
 TABSTOP_PATTERN = re.compile(r"\$\d+")
 
@@ -140,7 +140,9 @@ def snippet_preview(body: list[str]) -> str:
     lines = []
     for line in body:
         line = CHOICE_PATTERN.sub(r"\1", line)
-        line = PLACEHOLDER_PATTERN.sub(r"\1", line)
+        line = PLACEHOLDER_PATTERN.sub(
+            lambda match: re.sub(r"\\(.)", r"\1", match.group(1)), line
+        )
         line = line.replace("$0", "<!-- Add content here. -->")
         lines.append(TABSTOP_PATTERN.sub("", line).rstrip())
     return "\n".join(lines).rstrip()
