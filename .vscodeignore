@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 src/**
+scripts/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
@@ -29,6 +30,7 @@ out/test/**
 tests/**
 examples/**
 docs/**
+design-qa.md
 site/**
 build-data.py
 pyproject.toml

@@ -2,7 +2,7 @@
 
 Documentation for the VS Code extension that provides offline HTMX IntelliSense and same-file Django template partial support.
 
-![HTMX completion in VS Code](assets/images/completion.png)
+![HTMX attribute completion in VS Code](assets/images/attribute-completions.gif)
 
 ## What is documented here
 

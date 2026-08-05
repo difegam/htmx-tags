@@ -27,6 +27,10 @@ function positionOf(document: vscode.TextDocument, value: string, offset = 0): v
   return document.positionAt(index + offset);
 }
 
+async function insert(editor: vscode.TextEditor, text: string): Promise<void> {
+  await editor.edit((builder) => builder.insert(editor.selection.active, text));
+}
+
 export async function run(): Promise<void> {
   const extension = vscode.extensions.getExtension("difegam.htmx-tags-django");
   await extension?.activate();
@@ -44,21 +48,71 @@ export async function run(): Promise<void> {
   await vscode.commands.executeCommand("workbench.action.closePanel");
   await vscode.commands.executeCommand("notifications.clearAll");
 
-  const showcase = await vscode.workspace.openTextDocument(vscode.Uri.file(path.join(ROOT, "examples/showcase.html")));
-  await vscode.languages.setTextDocumentLanguage(showcase, "django-html");
-  const editor = await vscode.window.showTextDocument(showcase);
-  let position = positionOf(showcase, "hx-get", "hx-get".length);
-  editor.selection = new vscode.Selection(position, position);
+  const attributes = await vscode.workspace.openTextDocument({
+    language: "html",
+    content: `<main id="results">\n  <button h></button>\n</main>`,
+  });
+  const attributeEditor = await vscode.window.showTextDocument(attributes);
+  let position = positionOf(attributes, "button h", "button h".length);
+  attributeEditor.selection = new vscode.Selection(position, position);
+  await checkpoint("attribute-completions-typing");
+  await insert(attributeEditor, "x");
+  await checkpoint("attribute-completions-prefix");
+  await insert(attributeEditor, "-");
+  await checkpoint("attribute-completions-trigger");
   await vscode.commands.executeCommand("editor.action.triggerSuggest");
   await vscode.commands.executeCommand("notifications.clearAll");
-  await checkpoint("completion");
+  await checkpoint("attribute-completions-ranked");
+  await vscode.commands.executeCommand("selectNextSuggestion");
+  await checkpoint("attribute-completions-selected");
+  await vscode.commands.executeCommand("toggleSuggestionDetails");
+  await checkpoint("attribute-completions-details");
 
   await vscode.commands.executeCommand("hideSuggestWidget");
-  position = positionOf(showcase, "hx-trigger", 3);
-  editor.selection = new vscode.Selection(position, position);
+  const values = await vscode.workspace.openTextDocument({
+    language: "html",
+    content: `<section hx-swap=""></section>`,
+  });
+  const valuesEditor = await vscode.window.showTextDocument(values);
+  position = positionOf(values, `hx-swap="`, `hx-swap="`.length);
+  valuesEditor.selection = new vscode.Selection(position, position);
+  await checkpoint("context-aware-values-empty");
+  await vscode.commands.executeCommand("editor.action.triggerSuggest");
+  await vscode.commands.executeCommand("notifications.clearAll");
+  await checkpoint("context-aware-values-strategies");
+  await vscode.commands.executeCommand("toggleSuggestionDetails");
+  await checkpoint("context-aware-values-strategy-details");
+  await vscode.commands.executeCommand("hideSuggestWidget");
+  await insert(valuesEditor, "innerHTML");
+  await checkpoint("context-aware-values-selected");
+  await insert(valuesEditor, " ");
+  await checkpoint("context-aware-values-modifier-prefix");
+  await vscode.commands.executeCommand("editor.action.triggerSuggest");
+  await checkpoint("context-aware-values-modifiers");
+
+  await vscode.commands.executeCommand("hideSuggestWidget");
+  const hoverDocument = await vscode.workspace.openTextDocument({
+    language: "html",
+    content: `<main>\n  <button hx-get="/items" hx-target="closest section">Refresh</button>\n</main>`,
+  });
+  const hoverEditor = await vscode.window.showTextDocument(hoverDocument);
+  await checkpoint("hover-documentation-start");
+  position = positionOf(hoverDocument, "hx-target", 3);
+  hoverEditor.selection = new vscode.Selection(position, position);
+  await checkpoint("hover-documentation-focus");
   await vscode.commands.executeCommand("editor.action.showHover");
   await vscode.commands.executeCommand("notifications.clearAll");
-  await checkpoint("hover");
+  await checkpoint("hover-documentation-rich");
+  const actionDocument = await vscode.workspace.openTextDocument({
+    language: "html",
+    content: `<button hx-get="/items">Load items</button>`,
+  });
+  const actionEditor = await vscode.window.showTextDocument(actionDocument);
+  position = positionOf(actionDocument, "hx-get", 3);
+  actionEditor.selection = new vscode.Selection(position, position);
+  await checkpoint("hover-documentation-example");
+  await vscode.commands.executeCommand("editor.action.showHover");
+  await checkpoint("hover-documentation-actions");
 
   const diagnostics = await vscode.workspace.openTextDocument({
     language: "django-html",

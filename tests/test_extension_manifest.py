@@ -48,7 +48,7 @@ def test_django_snippets_are_registered() -> None:
 
 def test_catalog_shape_and_version_union() -> None:
     catalog = _read_json(ROOT / "htmx.catalog.json")
-    assert catalog["schemaVersion"] == 1
+    assert catalog["schemaVersion"] == 2
     assert catalog["generatedFrom"] == {"htmx2": "2.0.10", "htmx4": "4.0.0-beta5"}
     attributes = {entry["name"]: entry for entry in catalog["attributes"]}
     assert attributes["hx-get"]["versions"] == ["2", "4"]
@@ -56,6 +56,9 @@ def test_catalog_shape_and_version_union() -> None:
     assert "hx-sse" not in attributes
     assert "hx-ws" not in attributes
     assert not any(name.startswith("data-hx-") for name in attributes)
+    assert attributes["hx-get"]["examples"]["4"].startswith("<button")
+    assert attributes["hx-target"]["values"][1]["insertText"] == "closest ${1:selector}"
+    assert "commands" not in _read_json(ROOT / "package.json")["contributes"]
 
 
 def test_marketplace_assets_are_declared() -> None:

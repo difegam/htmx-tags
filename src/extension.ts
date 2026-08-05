@@ -3,10 +3,21 @@ import * as vscode from "vscode";
 import {
   type CatalogAttribute,
   type CatalogIndex,
+  type CatalogValue,
   type HtmxVersionMode,
   loadCatalog,
 } from "./catalog.js";
 import { analyzeDocument } from "./diagnostics.js";
+import {
+  completionKind,
+  COPY_EXAMPLE_COMMAND,
+  documentationMarkdown,
+  OPEN_SETTINGS_COMMAND,
+  valueExample,
+  valueKindLabel,
+  valuesForMode,
+  versionsLabel,
+} from "./intellisense.js";
 import {
   attributeAtOffset,
   partialAtOffset,
@@ -18,6 +29,7 @@ import {
 
 const DOCUMENT_SELECTOR: vscode.DocumentFilter[] = [{ language: "html" }, { language: "django-html" }];
 const DIAGNOSTIC_SOURCE = "htmx-tags";
+const COMPLETION_DOCUMENTATION = new WeakMap<vscode.CompletionItem, () => vscode.MarkdownString>();
 
 function configuration(document?: vscode.TextDocument): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration("htmxTags", document?.uri);
@@ -27,34 +39,8 @@ function versionMode(document: vscode.TextDocument): HtmxVersionMode {
   return configuration(document).get<HtmxVersionMode>("version", "compatible");
 }
 
-function versionsLabel(versions: readonly string[]): string {
-  return `HTMX ${versions.join(" & ")}`;
-}
-
-function documentationMarkdown(
-  name: string,
-  description: string,
-  versions: readonly string[],
-  documentation: Readonly<Record<string, string | undefined>>,
-  values?: CatalogAttribute["values"],
-  modifier?: string,
-): vscode.MarkdownString {
-  const markdown = new vscode.MarkdownString(undefined, true);
-  markdown.appendMarkdown(`**\`${name}\`** · ${versionsLabel(versions)}\n\n${description}`);
-  if (modifier !== undefined) {
-    markdown.appendMarkdown(`\n\nModifier: \`:${modifier}\``);
-  }
-  if (values !== undefined && values.length > 0) {
-    markdown.appendMarkdown(`\n\nSuggested values: ${values.map((value) => `\`${value.name}\``).join(", ")}`);
-  }
-  const links = Object.entries(documentation)
-    .filter((entry): entry is [string, string] => entry[1] !== undefined)
-    .map(([major, url]) => `[HTMX ${major} docs](${url})`);
-  if (links.length > 0) {
-    markdown.appendMarkdown(`\n\n${links.join(" · ")}`);
-  }
-  markdown.isTrusted = false;
-  return markdown;
+function deferDocumentation(item: vscode.CompletionItem, factory: () => vscode.MarkdownString): void {
+  COMPLETION_DOCUMENTATION.set(item, factory);
 }
 
 function completionRange(
@@ -86,20 +72,54 @@ function attributeCompletion(
   spelling: string,
   range: vscode.Range,
   insertValue: boolean,
+  mode: HtmxVersionMode,
 ): vscode.CompletionItem {
-  const item = new vscode.CompletionItem(spelling, vscode.CompletionItemKind.Property);
-  item.detail = `${versionsLabel(entry.versions)} attribute`;
-  item.documentation = documentationMarkdown(
-    spelling,
-    entry.description,
-    entry.versions,
-    entry.documentation,
-    entry.values,
+  const item = new vscode.CompletionItem(
+    {
+      label: spelling,
+      detail: ` · ${versionsLabel(entry.versions)}`,
+      description: entry.description,
+    },
+    vscode.CompletionItemKind.Property,
   );
+  item.detail = entry.deprecated ?? "HTMX attribute";
   item.range = range;
   item.insertText = insertValue ? new vscode.SnippetString(`${spelling}=\"$0\"`) : spelling;
-  item.sortText = `1-${spelling}`;
+  item.filterText = spelling;
+  item.sortText = `${attributePriority(entry.name)}-${spelling}`;
+  if (entry.deprecated !== undefined) {
+    item.tags = [vscode.CompletionItemTag.Deprecated];
+  }
+  deferDocumentation(item, () =>
+    documentationMarkdown({
+      name: spelling,
+      description: entry.description,
+      versions: entry.versions,
+      documentation: entry.documentation,
+      mode,
+      values: entry.values,
+      examples: entry.examples,
+    }),
+  );
   return item;
+}
+
+function attributePriority(name: string): string {
+  const priorities = [
+    "hx-get",
+    "hx-post",
+    "hx-put",
+    "hx-patch",
+    "hx-delete",
+    "hx-method",
+    "hx-target",
+    "hx-swap",
+    "hx-trigger",
+    "hx-boost",
+    "hx-ext",
+  ];
+  const index = priorities.indexOf(name);
+  return index < 0 ? "20" : index.toString().padStart(2, "0");
 }
 
 function dynamicCompletion(
@@ -107,12 +127,29 @@ function dynamicCompletion(
   snippet: string,
   detail: string,
   range: vscode.Range,
+  versions: CatalogAttribute["versions"],
+  documentation: CatalogAttribute["documentation"],
+  examples?: CatalogAttribute["examples"],
 ): vscode.CompletionItem {
-  const item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Property);
-  item.detail = detail;
+  const item = new vscode.CompletionItem(
+    { label, detail: ` · ${versionsLabel(versions)}`, description: detail },
+    vscode.CompletionItemKind.Property,
+  );
+  item.detail = "Dynamic HTMX attribute";
   item.range = range;
   item.insertText = new vscode.SnippetString(snippet);
-  item.sortText = `2-${label}`;
+  item.filterText = label;
+  item.sortText = `3-${label}`;
+  deferDocumentation(item, () =>
+    documentationMarkdown({
+      name: label,
+      description: detail,
+      versions,
+      documentation,
+      mode: "compatible",
+      examples,
+    }),
+  );
   return item;
 }
 
@@ -152,19 +189,94 @@ function valueCompletionItems(
   if (attribute.valueStart === undefined || offset < attribute.valueStart) {
     return undefined;
   }
-  const entry = catalog.resolve(attribute.name)?.attribute;
-  if (entry?.values === undefined) {
+  const resolved = catalog.resolve(attribute.name);
+  if (resolved?.attribute?.values === undefined) {
     return undefined;
   }
+  const entry = resolved.attribute;
+  const mode = versionMode(document);
   const beforeCursor = document.getText().slice(attribute.valueStart, offset);
-  const segment = entry.strictValues === true ? beforeCursor : beforeCursor.split(/[\s,]/).at(-1) ?? "";
-  const start = offset - segment.length;
+  let values = valuesForMode(entry.values, mode);
+  let start = attribute.valueStart;
+  let used: string[] = [];
+
+  if (resolved.canonicalName === "hx-swap") {
+    const tokens = beforeCursor.trim().split(/\s+/).filter(Boolean);
+    const strategyChosen = values.some(
+      (value) => value.kind === "strategy" && value.name === tokens[0],
+    );
+    if (strategyChosen && (/\s$/.test(beforeCursor) || tokens.length > 1)) {
+      values = values.filter((value) => value.kind === "modifier");
+      start = attribute.valueStart + (beforeCursor.search(/\S+$/) < 0 ? beforeCursor.length : beforeCursor.search(/\S+$/));
+      used = tokens.slice(1);
+    } else {
+      values = values.filter((value) => value.kind === "strategy");
+      start += beforeCursor.search(/\S|$/);
+    }
+  } else if (resolved.canonicalName === "hx-trigger") {
+    const clauseStart = beforeCursor.lastIndexOf(",") + 1;
+    const clause = beforeCursor.slice(clauseStart);
+    const tokens = clause.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length > 0 && (/\s$/.test(clause) || tokens.length > 1)) {
+      values = values.filter((value) => value.kind === "modifier");
+      start = attribute.valueStart + clauseStart + (clause.search(/\S+$/) < 0 ? clause.length : clause.search(/\S+$/));
+      used = tokens.slice(1);
+    } else {
+      values = values.filter((value) => value.kind === "event");
+      start = attribute.valueStart + clauseStart + clause.search(/\S|$/);
+    }
+  } else if (resolved.canonicalName === "hx-ext") {
+    const segmentStart = beforeCursor.lastIndexOf(",") + 1;
+    const segment = beforeCursor.slice(segmentStart);
+    start = attribute.valueStart + segmentStart + segment.search(/\S|$/);
+    used = beforeCursor
+      .slice(0, segmentStart)
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+  } else if (resolved.canonicalName === "hx-disinherit") {
+    const attributes: CatalogValue[] = catalog.list(mode).map((candidate) => ({
+      name: candidate.name,
+      description: `Disable inheritance of ${candidate.name}`,
+      versions: candidate.versions,
+      kind: "attribute",
+    }));
+    values = [...values, ...attributes];
+    const segment = beforeCursor.split(/[\s,]/).at(-1) ?? "";
+    start = offset - segment.length;
+    used = beforeCursor.split(/[\s,]/).filter(Boolean);
+  } else if (!entry.strictValues && !["hx-target", "hx-sync", "hx-params", "hx-swap-oob"].includes(resolved.canonicalName)) {
+    const segment = beforeCursor.split(/[\s,]/).at(-1) ?? "";
+    start = offset - segment.length;
+  }
+
+  values = values.filter(
+    (value) => !used.some((token) => token === value.name || token.startsWith(value.name)),
+  );
   const range = new vscode.Range(document.positionAt(start), document.positionAt(offset));
-  return entry.values.map((value) => {
-    const item = new vscode.CompletionItem(value.name, vscode.CompletionItemKind.Value);
-    item.detail = value.description;
+  return values.map((value, index) => {
+    const versions = value.versions ?? entry.versions;
+    const item = new vscode.CompletionItem(
+      { label: value.name, description: value.description },
+      completionKind(value.kind),
+    );
+    item.detail = `${valueKindLabel(value.kind)} · ${versionsLabel(versions)}`;
     item.range = range;
-    item.insertText = value.name;
+    item.insertText = new vscode.SnippetString(value.insertText ?? value.name);
+    item.filterText = value.name;
+    item.sortText = index.toString().padStart(2, "0");
+    item.preselect = index === 0;
+    deferDocumentation(item, () =>
+      documentationMarkdown({
+        name: `${attribute.name}=\"${value.name}\"`,
+        description: value.description,
+        versions,
+        documentation: entry.documentation,
+        relatedDocumentation: value.documentation,
+        mode,
+        example: valueExample(attribute.name, value),
+      }),
+    );
     return item;
   });
 }
@@ -208,53 +320,77 @@ function provideCompletions(
   }
   const dataAlias = prefix.startsWith("data-");
   const assignmentExists = followsWithAssignment(text, attribute?.nameEnd ?? offset);
-  const entries = catalog.list(versionMode(document));
+  const mode = versionMode(document);
+  const entries = catalog.list(mode);
   const items = entries.map((entry) => {
     const spelling = dataAlias ? `data-${entry.name}` : entry.name;
-    return attributeCompletion(entry, spelling, range, !assignmentExists);
+    return attributeCompletion(entry, spelling, range, !assignmentExists, mode);
   });
 
   const alias = dataAlias ? "data-" : "";
-  const mode = versionMode(document);
+  const pattern = (name: string) => catalog.data.patterns.find((entry) => entry.name === name);
+  const hxOn = pattern("hx-on:<event>");
+  if (hxOn !== undefined) {
   items.push(
     dynamicCompletion(
       `${alias}hx-on:<event>`,
       `${alias}hx-on:\${1:event}=\"$0\"`,
       "Handle a DOM event inline",
       range,
-    ),
+        hxOn.versions,
+        hxOn.documentation,
+        hxOn.examples,
+      ),
     dynamicCompletion(
       `${alias}hx-on::<event>`,
       `${alias}hx-on::\${1:before-request}=\"$0\"`,
       "Handle an HTMX event inline",
       range,
-    ),
+        hxOn.versions,
+        hxOn.documentation,
+        hxOn.examples,
+      ),
   );
+  }
   if (mode !== "4") {
+    const responseTargets = pattern("hx-target-<status>");
+    if (responseTargets !== undefined) {
     items.push(
       dynamicCompletion(
         `${alias}hx-target-<status>`,
         `${alias}hx-target-\${1:4*}=\"\${2:#errors}\"`,
         "Response Targets extension",
         range,
+          responseTargets.versions,
+          responseTargets.documentation,
+          responseTargets.examples,
       ),
     );
+    }
   }
   if (mode !== "2") {
+    const status = pattern("hx-status:<status>");
+    if (status !== undefined) {
     items.push(
       dynamicCompletion(
         `${alias}hx-status:<status>`,
         `${alias}hx-status:\${1:422}=\"\${2:target:#errors}\"`,
         "HTMX 4 status-specific response handling",
         range,
+          status.versions,
+          status.documentation,
+          status.examples,
       ),
     );
+    }
   }
 
   for (const entry of entries) {
     for (const modifier of entry.modifiers ?? []) {
       const spelling = `${alias}${entry.name}:${modifier}`;
-      items.push(attributeCompletion(entry, spelling, range, !assignmentExists));
+      const item = attributeCompletion(entry, spelling, range, !assignmentExists, mode);
+      item.sortText = `30-${spelling}`;
+      items.push(item);
     }
   }
   return items;
@@ -276,14 +412,16 @@ function provideHover(
     if (resolved === undefined) {
       return undefined;
     }
-    const markdown = documentationMarkdown(
-      attribute.name,
-      resolved.description,
-      resolved.versions,
-      resolved.documentation,
-      resolved.attribute?.values,
-      resolved.modifier,
-    );
+    const markdown = documentationMarkdown({
+      name: attribute.name,
+      description: resolved.description,
+      versions: resolved.versions,
+      documentation: resolved.documentation,
+      mode: versionMode(document),
+      values: resolved.attribute?.values,
+      modifier: resolved.modifier,
+      examples: resolved.examples,
+    });
     return new vscode.Hover(
       markdown,
       new vscode.Range(document.positionAt(attribute.nameStart), document.positionAt(attribute.nameEnd)),
@@ -351,11 +489,32 @@ export function activate(context: vscode.ExtensionContext): void {
     );
   };
 
+  const copyExample = async (argument: unknown): Promise<void> => {
+    if (
+      typeof argument !== "object" ||
+      argument === null ||
+      !("text" in argument) ||
+      typeof argument.text !== "string" ||
+      argument.text.length === 0 ||
+      argument.text.length > 20_000
+    ) {
+      return;
+    }
+    await vscode.env.clipboard.writeText(argument.text);
+    vscode.window.setStatusBarMessage("HTMX example copied", 2_000);
+  };
+
   context.subscriptions.push(
     diagnostics,
     vscode.languages.registerCompletionItemProvider(
       DOCUMENT_SELECTOR,
-      { provideCompletionItems: (document, position) => provideCompletions(catalog, document, position) },
+      {
+        provideCompletionItems: (document, position) => provideCompletions(catalog, document, position),
+        resolveCompletionItem: (item) => {
+          item.documentation = COMPLETION_DOCUMENTATION.get(item)?.();
+          return item;
+        },
+      },
       "-",
       ":",
       "\"",
@@ -366,6 +525,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerHoverProvider(DOCUMENT_SELECTOR, {
       provideHover: (document, position) => provideHover(catalog, document, position),
     }),
+    vscode.commands.registerCommand(COPY_EXAMPLE_COMMAND, copyExample),
+    vscode.commands.registerCommand(OPEN_SETTINGS_COMMAND, () =>
+      vscode.commands.executeCommand("workbench.action.openSettings", "@ext:difegam.htmx-tags-django"),
+    ),
     vscode.workspace.onDidOpenTextDocument(updateDiagnostics),
     vscode.workspace.onDidChangeTextDocument((event) => scheduleDiagnostics(event.document)),
     vscode.workspace.onDidCloseTextDocument((document) => {

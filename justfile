@@ -31,6 +31,10 @@ test:
 test-extension:
     npm run test:extension
 
+[doc("Regenerate Marketplace and documentation demo assets")]
+demo-assets:
+    npm run capture-screenshots
+
 [doc("Format documentation files")]
 [group("docs")]
 docs-format:

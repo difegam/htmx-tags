@@ -10,9 +10,19 @@ const catalog = new CatalogIndex(
 );
 
 test("catalog contains both pinned HTMX versions", () => {
+  assert.equal(catalog.data.schemaVersion, 2);
   assert.deepEqual(catalog.data.generatedFrom, { htmx2: "2.0.10", htmx4: "4.0.0-beta5" });
   assert.equal(catalog.resolve("hx-get")?.versions.join(","), "2,4");
   assert.deepEqual(catalog.resolve("hx-status")?.versions, ["4"]);
+});
+
+test("schema v2 carries rich examples and specialized value metadata", () => {
+  const swap = catalog.resolve("hx-swap")?.attribute;
+  assert.match(swap?.examples?.["4"] ?? "", /hx-swap/);
+  assert.equal(swap?.values?.find((value) => value.name === "innerMorph")?.versions?.[0], "4");
+  assert.equal(swap?.values?.find((value) => value.name === "swap:")?.insertText, "swap:${1:500ms}");
+  assert.ok(catalog.resolve("hx-ext")?.attribute?.values?.some((value) => value.documentation));
+  assert.equal(catalog.resolve("hx-target")?.attribute?.values?.find((value) => value.name === "closest")?.insertText, "closest ${1:selector}");
 });
 
 test("data-hx aliases normalize without duplicate catalog entries", () => {

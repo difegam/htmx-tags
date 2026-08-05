@@ -13,6 +13,8 @@ Within an opening element, type `hx-` and select an item. A normal selection ins
 
 If an `=` or quoted value already exists, completion replaces only the attribute name and does not duplicate punctuation.
 
+![HTMX attribute completion in VS Code](../assets/images/attribute-completions.gif)
+
 ## Complete a documented value
 
 Request completion inside the value of an attribute with catalog-backed values:
@@ -26,6 +28,14 @@ Request completion inside the value of an attribute with catalog-backed values:
 ```
 
 `hx-swap` provides swap strategies; `hx-trigger` provides event and modifier fragments; `hx-target` provides target forms. Hover an attribute for its version availability, suggested values, and official HTMX links.
+
+![HTMX value completion in VS Code](../assets/images/context-aware-values.gif)
+
+## Read attribute documentation
+
+Hover a recognized `hx-*` or `data-hx-*` name for concise behavior, version availability, documented values, and official HTMX links.
+
+![HTMX hover documentation in VS Code](../assets/images/hover-documentation.gif)
 
 ## Use `data-hx-*`
 
@@ -47,5 +57,3 @@ The catalog stores only `hx-*`; aliases have identical completion, hover, and di
 ```
 
 `hx-target-*` response-target syntax is catalogued as HTMX 2 extension syntax. `hx-status:*` is HTMX 4 syntax. Select a version mode if you want those differences surfaced as editor hints.
-
-![Hover documentation](../assets/images/hover.png)

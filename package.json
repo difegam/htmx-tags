@@ -1,7 +1,7 @@
 {
   "name": "htmx-tags-django",
   "displayName": "HTMX Tags for Django",
-  "description": "HTMX 2/4 IntelliSense, diagnostics, and Django 6 template partial support.",
+  "description": "Offline HTMX 2/4 IntelliSense, diagnostics, snippets, and Django 6 template partials for VS Code.",
   "version": "0.2.0",
   "publisher": "difegam",
   "license": "Apache-2.0",
@@ -24,11 +24,18 @@
   ],
   "keywords": [
     "htmx",
+    "htmx 2",
+    "htmx 4",
     "html",
     "django",
+    "django templates",
+    "django partials",
     "templates",
     "partials",
-    "intellisense"
+    "intellisense",
+    "autocomplete",
+    "diagnostics",
+    "snippets"
   ],
   "activationEvents": [
     "onLanguage:html",
@@ -91,7 +98,7 @@
     "test": "npm run test:unit && uv --cache-dir .cache/uv run pytest -q",
     "test:unit": "npm run compile && node --test out/test/*.test.js",
     "test:extension": "npm run compile && node out/test/runTest.js",
-    "capture-screenshots": "npm run compile && node out/test/captureScreenshots.js",
+    "capture-screenshots": "bash scripts/regenerate-demo-assets.sh",
     "package": "vsce package"
   },
   "devDependencies": {

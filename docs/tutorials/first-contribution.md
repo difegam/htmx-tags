@@ -34,6 +34,16 @@ npm run package
 
 `npm test` runs TypeScript unit tests and Python generator/manifest tests. `npm run test:extension` launches extension-host smoke tests for both supported language modes. Packaging confirms the installed artifact contains runtime files, catalog, snippets, and presentation assets rather than source and docs.
 
+## Refresh demo assets
+
+After a UI or UX change, regenerate the committed Marketplace and documentation demos:
+
+```bash
+npm run capture-screenshots
+```
+
+The command captures real extension-host states, rewrites `images/diagnostics.png`, `images/partials.png`, and the three animated feature GIFs, then mirrors each file under `docs/assets/images/`. It never changes the hand-designed extension icon or Marketplace banner. GIF generation uses `ffmpeg` when available, with a macOS ImageIO fallback.
+
 ## Review catalog changes
 
 ```bash

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "generatedFrom": {
     "htmx2": "2.0.10",
     "htmx4": "4.0.0-beta5"
@@ -13,6 +13,9 @@
       ],
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-action"
+      },
+      "examples": {
+        "4": "<button hx-action=\"/api/users\" hx-method=\"post\">\n    Create User\n</button>"
       },
       "modifiers": [
         "inherited"
@@ -29,14 +32,20 @@
         "2": "https://htmx.org/attributes/hx-boost/",
         "4": "https://four.htmx.org/reference/attributes/hx-boost"
       },
+      "examples": {
+        "2": "<nav hx-boost=\"true\"><a href=\"/account\">Account</a></nav>",
+        "4": "<nav hx-boost=\"true\"><a href=\"/account\">Account</a></nav>"
+      },
       "values": [
         {
           "name": "true",
-          "description": "Enable boosted navigation"
+          "description": "Enable boosted navigation",
+          "kind": "value"
         },
         {
           "name": "false",
-          "description": "Disable boosted navigation"
+          "description": "Disable boosted navigation",
+          "kind": "value"
         }
       ],
       "strictValues": true,
@@ -53,6 +62,9 @@
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-config"
       },
+      "examples": {
+        "4": "<button hx-post=\"/api/users\" hx-config='{\"timeout\": 5000}'>\n    Create User\n</button>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -67,6 +79,10 @@
       "documentation": {
         "2": "https://htmx.org/attributes/hx-confirm/",
         "4": "https://four.htmx.org/reference/attributes/hx-confirm"
+      },
+      "examples": {
+        "2": "<button hx-delete=\"/account\" hx-confirm=\"Are you sure you wish to delete your account?\">\n  Delete My Account\n</button>",
+        "4": "<button hx-delete=\"/account\" hx-confirm=\"Are you sure?\">Delete Account</button>"
       },
       "modifiers": [
         "inherited"
@@ -83,6 +99,10 @@
         "2": "https://htmx.org/attributes/hx-delete/",
         "4": "https://four.htmx.org/reference/attributes/hx-delete"
       },
+      "examples": {
+        "2": "<button hx-delete=\"/items/42\" hx-confirm=\"Delete this item?\">Delete</button>",
+        "4": "<button hx-delete=\"/items/42\" hx-confirm=\"Delete this item?\">Delete</button>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -98,6 +118,9 @@
         "2": "https://htmx.org/attributes/hx-disable/",
         "4": "https://four.htmx.org/reference/attributes/hx-disable"
       },
+      "examples": {
+        "4": "<button hx-post=\"/submit\" hx-disable=\"this\">Submit</button>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -110,6 +133,9 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-disabled-elt/"
+      },
+      "examples": {
+        "2": "<button hx-post=\"/example\" hx-disabled-elt=\"this\">\n    Post It!\n</button>"
       }
     },
     {
@@ -120,7 +146,17 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-disinherit/"
-      }
+      },
+      "examples": {
+        "2": "<section hx-disinherit=\"hx-target hx-swap\"></section>"
+      },
+      "values": [
+        {
+          "name": "*",
+          "description": "Disable inheritance for every HTMX attribute",
+          "kind": "attribute"
+        }
+      ]
     },
     {
       "name": "hx-encoding",
@@ -133,10 +169,14 @@
         "2": "https://htmx.org/attributes/hx-encoding/",
         "4": "https://four.htmx.org/reference/attributes/hx-encoding"
       },
+      "examples": {
+        "4": "<form hx-post=\"/upload\" hx-encoding=\"multipart/form-data\">\n    <input type=\"file\" name=\"file\">\n    <button type=\"submit\">Upload</button>\n</form>"
+      },
       "values": [
         {
           "name": "multipart/form-data",
-          "description": "Use multipart form encoding for file uploads"
+          "description": "Use multipart form encoding for file uploads",
+          "kind": "value"
         }
       ],
       "strictValues": true,
@@ -152,7 +192,114 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-ext/"
-      }
+      },
+      "examples": {
+        "2": "<main hx-ext=\"preload,response-targets\"></main>"
+      },
+      "values": [
+        {
+          "name": "head-support",
+          "description": "Merge response head content",
+          "kind": "extension",
+          "documentation": "https://htmx.org/extensions/head-support/"
+        },
+        {
+          "name": "preload",
+          "description": "Preload linked content for faster navigation",
+          "kind": "extension",
+          "documentation": "https://htmx.org/extensions/preload/"
+        },
+        {
+          "name": "response-targets",
+          "description": "Target elements by HTTP response status",
+          "kind": "extension",
+          "documentation": "https://htmx.org/extensions/response-targets/"
+        },
+        {
+          "name": "sse",
+          "description": "Add Server-Sent Events support",
+          "kind": "extension",
+          "documentation": "https://htmx.org/extensions/sse/"
+        },
+        {
+          "name": "ws",
+          "description": "Add WebSocket support",
+          "kind": "extension",
+          "documentation": "https://htmx.org/extensions/ws/"
+        },
+        {
+          "name": "idiomorph",
+          "description": "Use Idiomorph DOM morphing",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/idiomorph"
+        },
+        {
+          "name": "json-enc",
+          "description": "Encode request parameters as JSON",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/json-enc"
+        },
+        {
+          "name": "morphdom-swap",
+          "description": "Use morphdom for response swaps",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/morphdom-swap"
+        },
+        {
+          "name": "alpine-morph",
+          "description": "Use Alpine's morph plugin for swaps",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/alpine-morph"
+        },
+        {
+          "name": "class-tools",
+          "description": "Manipulate classes declaratively",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/class-tools"
+        },
+        {
+          "name": "multi-swap",
+          "description": "Swap multiple response elements",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/multi-swap"
+        },
+        {
+          "name": "path-deps",
+          "description": "Refresh elements from path dependencies",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/path-deps"
+        },
+        {
+          "name": "remove-me",
+          "description": "Remove elements after a delay",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/remove-me"
+        },
+        {
+          "name": "loading-states",
+          "description": "Manage loading states with CSS classes",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/loading-states"
+        },
+        {
+          "name": "debug",
+          "description": "Log HTMX events for debugging",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/debug"
+        },
+        {
+          "name": "method-override",
+          "description": "Send HTTP method override headers",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/method-override"
+        },
+        {
+          "name": "client-side-templates",
+          "description": "Render responses with client-side templates",
+          "kind": "extension",
+          "documentation": "https://github.com/bigskysoftware/htmx-extensions/tree/main/src/client-side-templates"
+        }
+      ]
     },
     {
       "name": "hx-get",
@@ -164,6 +311,10 @@
       "documentation": {
         "2": "https://htmx.org/attributes/hx-get/",
         "4": "https://four.htmx.org/reference/attributes/hx-get"
+      },
+      "examples": {
+        "2": "<button hx-get=\"/items\" hx-target=\"#results\">Load</button>",
+        "4": "<button hx-get=\"/items\" hx-target=\"#results\">Load</button>"
       },
       "modifiers": [
         "inherited"
@@ -180,6 +331,10 @@
         "2": "https://htmx.org/attributes/hx-headers/",
         "4": "https://four.htmx.org/reference/attributes/hx-headers"
       },
+      "examples": {
+        "2": "<div hx-get=\"/example\" hx-headers='{\"myHeader\": \"My Value\"}'>Get Some HTML, Including A Custom Header in the Request</div>\n\n  <div hx-get=\"/example\" hx-headers='js:{myVal: calculateValue()}'>Get Some HTML, Including a Dynamic Custom Header from Javascript in the Request</div>",
+        "4": "<div hx-get=\"/data\" hx-headers='{\"myHeader\": \"My Value\"}'>Get Data</div>"
+      },
       "modifiers": [
         "inherited",
         "append"
@@ -193,6 +348,9 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-history/"
+      },
+      "examples": {
+        "2": "<html>\n<body>\n<div hx-history=\"false\">\n ...\n</div>\n</body>\n</html>"
       }
     },
     {
@@ -206,6 +364,10 @@
         "2": "https://htmx.org/attributes/hx-history-elt/",
         "4": "https://four.htmx.org/reference/attributes/hx-history-elt"
       },
+      "examples": {
+        "2": "<html>\n<body>\n<div id=\"content\" hx-history-elt>\n ...\n</div>\n</body>\n</html>",
+        "4": "<main hx-history-elt>\n    <!-- only this element is replaced on back/forward navigation -->\n</main>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -218,6 +380,9 @@
       ],
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-ignore"
+      },
+      "examples": {
+        "4": "<div hx-ignore>\n    <!-- htmx will not process any attributes here -->\n</div>"
       },
       "modifiers": [
         "inherited"
@@ -233,6 +398,10 @@
       "documentation": {
         "2": "https://htmx.org/attributes/hx-include/",
         "4": "https://four.htmx.org/reference/attributes/hx-include"
+      },
+      "examples": {
+        "2": "<div>\n    <button hx-post=\"/register\" hx-include=\"[name='email']\">\n        Register!\n    </button>\n    Enter email: <input name=\"email\" type=\"email\"/>\n</div>",
+        "4": "<button hx-post=\"/register\" hx-include=\"[name='email']\">Register</button>"
       },
       "modifiers": [
         "inherited",
@@ -250,6 +419,10 @@
         "2": "https://htmx.org/attributes/hx-indicator/",
         "4": "https://four.htmx.org/reference/attributes/hx-indicator"
       },
+      "examples": {
+        "2": "<div>\n    <button hx-post=\"/example\" hx-indicator=\"#spinner\">\n        Post It!\n    </button>\n    <img  id=\"spinner\" class=\"htmx-indicator\" src=\"/img/bars.svg\" alt=\"Loading...\"/>\n</div>",
+        "4": "<button hx-post=\"/submit\" hx-indicator=\"#spinner\">Submit</button>"
+      },
       "modifiers": [
         "inherited",
         "append"
@@ -263,6 +436,9 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-inherit/"
+      },
+      "examples": {
+        "2": "<div hx-target=\"#tab-container\" hx-inherit=\"hx-target\">\n  <a hx-boost=\"true\" href=\"/tab1\">Tab 1</a>\n  <a hx-boost=\"true\" href=\"/tab2\">Tab 2</a>\n  <a hx-boost=\"true\" href=\"/tab3\">Tab 3</a>\n</div>"
       }
     },
     {
@@ -274,26 +450,49 @@
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-method"
       },
+      "examples": {
+        "4": "<button hx-method=\"post\" hx-url=\"/items\">Save</button>"
+      },
       "values": [
         {
           "name": "get",
-          "description": "Issue a GET request"
+          "description": "Issue a GET request",
+          "kind": "value",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "post",
-          "description": "Issue a POST request"
+          "description": "Issue a POST request",
+          "kind": "value",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "put",
-          "description": "Issue a PUT request"
+          "description": "Issue a PUT request",
+          "kind": "value",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "patch",
-          "description": "Issue a PATCH request"
+          "description": "Issue a PATCH request",
+          "kind": "value",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "delete",
-          "description": "Issue a DELETE request"
+          "description": "Issue a DELETE request",
+          "kind": "value",
+          "versions": [
+            "4"
+          ]
         }
       ],
       "strictValues": true,
@@ -312,6 +511,10 @@
         "2": "https://htmx.org/attributes/hx-on/",
         "4": "https://four.htmx.org/reference/attributes/hx-on"
       },
+      "examples": {
+        "2": "<div hx-on:click=\"alert('Clicked!')\">Click</div>",
+        "4": "<!-- hx-on:<event>=<js> -->\n\n<dialog hx-on:load=\"this.showModal()\">"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -325,6 +528,9 @@
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-optimistic"
       },
+      "examples": {
+        "4": "<div hx-post=\"/like\" hx-optimistic=\"#liked-state\">Like</div>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -337,7 +543,28 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-params/"
-      }
+      },
+      "examples": {
+        "2": "<button hx-post=\"/search\" hx-params=\"not csrfmiddlewaretoken\">Search</button>"
+      },
+      "values": [
+        {
+          "name": "*",
+          "description": "Include all parameters",
+          "kind": "value"
+        },
+        {
+          "name": "none",
+          "description": "Include no parameters",
+          "kind": "value"
+        },
+        {
+          "name": "not",
+          "description": "Exclude named parameters",
+          "kind": "value",
+          "insertText": "not ${1:param1,param2}"
+        }
+      ]
     },
     {
       "name": "hx-patch",
@@ -349,6 +576,10 @@
       "documentation": {
         "2": "https://htmx.org/attributes/hx-patch/",
         "4": "https://four.htmx.org/reference/attributes/hx-patch"
+      },
+      "examples": {
+        "2": "<button hx-patch=\"/items/42\" hx-target=\"#item-42\">Patch</button>",
+        "4": "<button hx-patch=\"/items/42\" hx-target=\"#item-42\">Patch</button>"
       },
       "modifiers": [
         "inherited"
@@ -365,6 +596,10 @@
         "2": "https://htmx.org/attributes/hx-post/",
         "4": "https://four.htmx.org/reference/attributes/hx-post"
       },
+      "examples": {
+        "2": "<form hx-post=\"/items\" hx-target=\"#results\">\n  <button>Save</button>\n</form>",
+        "4": "<form hx-post=\"/items\" hx-target=\"#results\">\n  <button>Save</button>\n</form>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -377,6 +612,9 @@
       ],
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-preload"
+      },
+      "examples": {
+        "4": "<a href=\"/details\" hx-get=\"/details\" hx-preload=\"mouseenter\">View Details</a>"
       },
       "modifiers": [
         "inherited"
@@ -393,6 +631,10 @@
         "2": "https://htmx.org/attributes/hx-preserve/",
         "4": "https://four.htmx.org/reference/attributes/hx-preserve"
       },
+      "examples": {
+        "2": "<div id=\"new_location\">\n    Just relocated the video here\n    <div id=\"video\" hx-preserve></div>\n  </div>",
+        "4": "<div id=\"video-player\" hx-preserve=\"true\">...</div>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -405,6 +647,9 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-prompt/"
+      },
+      "examples": {
+        "2": "<button hx-delete=\"/account\" hx-prompt=\"Enter your account name to confirm deletion\">\n  Delete My Account\n</button>"
       }
     },
     {
@@ -417,6 +662,10 @@
       "documentation": {
         "2": "https://htmx.org/attributes/hx-push-url/",
         "4": "https://four.htmx.org/reference/attributes/hx-push-url"
+      },
+      "examples": {
+        "2": "<div hx-get=\"/account\" hx-push-url=\"true\">\n  Go to My Account\n</div>",
+        "4": "<div hx-get=\"/account\" hx-push-url=\"true\">Go to My Account</div>"
       },
       "modifiers": [
         "inherited"
@@ -433,6 +682,10 @@
         "2": "https://htmx.org/attributes/hx-put/",
         "4": "https://four.htmx.org/reference/attributes/hx-put"
       },
+      "examples": {
+        "2": "<button hx-put=\"/items/42\" hx-target=\"#item-42\">Update</button>",
+        "4": "<button hx-put=\"/items/42\" hx-target=\"#item-42\">Update</button>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -448,6 +701,10 @@
         "2": "https://htmx.org/attributes/hx-replace-url/",
         "4": "https://four.htmx.org/reference/attributes/hx-replace-url"
       },
+      "examples": {
+        "2": "<div hx-get=\"/account\" hx-replace-url=\"true\">\n  Go to My Account\n</div>",
+        "4": "<div hx-get=\"/account\" hx-replace-url=\"true\">Go to My Account</div>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -460,6 +717,9 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-request/"
+      },
+      "examples": {
+        "2": "<div ... hx-request='{\"timeout\":100}'>\n  ...\n</div>"
       }
     },
     {
@@ -472,6 +732,10 @@
       "documentation": {
         "2": "https://htmx.org/attributes/hx-select/",
         "4": "https://four.htmx.org/reference/attributes/hx-select"
+      },
+      "examples": {
+        "2": "<div>\n    <button hx-get=\"/info\" hx-select=\"#info-detail\" hx-swap=\"outerHTML\">\n        Get Info!\n    </button>\n</div>",
+        "4": "<button hx-get=\"/page\" hx-select=\"#content\">Load Content</button>"
       },
       "modifiers": [
         "inherited"
@@ -488,6 +752,10 @@
         "2": "https://htmx.org/attributes/hx-select-oob/",
         "4": "https://four.htmx.org/reference/attributes/hx-select-oob"
       },
+      "examples": {
+        "2": "<div>\n   <div id=\"alert\"></div>\n    <button hx-get=\"/info\" \n            hx-select=\"#info-details\" \n            hx-swap=\"outerHTML\"\n            hx-select-oob=\"#alert\">\n        Get Info!\n    </button>\n</div>",
+        "4": "<button hx-get=\"/example\" hx-select-oob=\"#alert,#sidebar:afterbegin\">\n  Click Me\n</button>"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -500,6 +768,9 @@
       ],
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-status"
+      },
+      "examples": {
+        "4": "<!-- Show validation errors in a specific container -->\n<form hx-post=\"...\"\n      hx-status:422=\"target:#errors select:#validation-errors\">\n  ...\n</form>\n\n<!-- Suppress swap on server errors -->\n<button hx-post=\"...\" hx-status:5xx=\"swap:none\">Save</button>\n\n<!-- Push a custom URL on 201 Created -->\n<form hx-post=\"...\" hx-status:201=\"push:/items/new\">...</form>"
       },
       "modifiers": [
         "inherited"
@@ -516,66 +787,145 @@
         "2": "https://htmx.org/attributes/hx-swap/",
         "4": "https://four.htmx.org/reference/attributes/hx-swap"
       },
+      "examples": {
+        "2": "<section hx-get=\"/items\" hx-swap=\"innerHTML swap:300ms\"></section>",
+        "4": "<section hx-get=\"/items\" hx-swap=\"innerHTML swap:300ms\"></section>"
+      },
       "values": [
         {
           "name": "innerHTML",
-          "description": "Replace the target's contents"
+          "description": "Replace the target's contents",
+          "kind": "strategy"
         },
         {
           "name": "outerHTML",
-          "description": "Replace the target element"
+          "description": "Replace the target element",
+          "kind": "strategy"
         },
         {
           "name": "textContent",
-          "description": "Replace text without parsing HTML"
+          "description": "Replace text without parsing HTML",
+          "kind": "strategy"
         },
         {
           "name": "beforebegin",
-          "description": "Insert before the target"
+          "description": "Insert before the target",
+          "kind": "strategy"
         },
         {
           "name": "afterbegin",
-          "description": "Insert before the target's first child"
+          "description": "Insert before the target's first child",
+          "kind": "strategy"
         },
         {
           "name": "beforeend",
-          "description": "Insert after the target's last child"
+          "description": "Insert after the target's last child",
+          "kind": "strategy"
         },
         {
           "name": "afterend",
-          "description": "Insert after the target"
+          "description": "Insert after the target",
+          "kind": "strategy"
         },
         {
           "name": "delete",
-          "description": "Delete the target"
+          "description": "Delete the target",
+          "kind": "strategy"
         },
         {
           "name": "none",
-          "description": "Do not swap response content"
+          "description": "Do not swap response content",
+          "kind": "strategy"
         },
         {
           "name": "innerMorph",
-          "description": "Morph the target's contents (HTMX 4)"
+          "description": "Morph the target's contents",
+          "kind": "strategy",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "outerMorph",
-          "description": "Morph the target element (HTMX 4)"
+          "description": "Morph the target element",
+          "kind": "strategy",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "before",
-          "description": "Alias for beforebegin (HTMX 4)"
+          "description": "Alias for beforebegin",
+          "kind": "strategy",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "after",
-          "description": "Alias for afterend (HTMX 4)"
+          "description": "Alias for afterend",
+          "kind": "strategy",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "prepend",
-          "description": "Alias for afterbegin (HTMX 4)"
+          "description": "Alias for afterbegin",
+          "kind": "strategy",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "append",
-          "description": "Alias for beforeend (HTMX 4)"
+          "description": "Alias for beforeend",
+          "kind": "strategy",
+          "versions": [
+            "4"
+          ]
+        },
+        {
+          "name": "swap:",
+          "description": "Delay the swap after receiving a response",
+          "kind": "modifier",
+          "insertText": "swap:${1:500ms}"
+        },
+        {
+          "name": "settle:",
+          "description": "Delay the settle phase after swapping",
+          "kind": "modifier",
+          "insertText": "settle:${1:100ms}"
+        },
+        {
+          "name": "transition:",
+          "description": "Use a view transition for the swap",
+          "kind": "modifier",
+          "insertText": "transition:${1|true,false|}"
+        },
+        {
+          "name": "scroll:",
+          "description": "Scroll the target after swapping",
+          "kind": "modifier",
+          "insertText": "scroll:${1|top,bottom|}"
+        },
+        {
+          "name": "show:",
+          "description": "Show the target after swapping",
+          "kind": "modifier",
+          "insertText": "show:${1|top,bottom|}"
+        },
+        {
+          "name": "ignoreTitle:",
+          "description": "Ignore title elements in the response",
+          "kind": "modifier",
+          "insertText": "ignoreTitle:${1|true,false|}"
+        },
+        {
+          "name": "focus-scroll:",
+          "description": "Control scrolling to restored focus",
+          "kind": "modifier",
+          "insertText": "focus-scroll:${1|true,false|}"
         }
       ],
       "modifiers": [
@@ -593,6 +943,117 @@
         "2": "https://htmx.org/attributes/hx-swap-oob/",
         "4": "https://four.htmx.org/reference/attributes/hx-swap-oob"
       },
+      "examples": {
+        "2": "<aside id=\"notifications\" hx-swap-oob=\"beforeend\"></aside>",
+        "4": "<aside id=\"notifications\" hx-swap-oob=\"beforeend\"></aside>"
+      },
+      "values": [
+        {
+          "name": "true",
+          "description": "Swap by matching the element id",
+          "kind": "strategy"
+        },
+        {
+          "name": "innerHTML",
+          "description": "Replace the matching element's contents",
+          "kind": "strategy",
+          "insertText": "innerHTML${1::selector}"
+        },
+        {
+          "name": "outerHTML",
+          "description": "Replace the matching element",
+          "kind": "strategy",
+          "insertText": "outerHTML${1::selector}"
+        },
+        {
+          "name": "beforebegin",
+          "description": "Insert before the matching element",
+          "kind": "strategy",
+          "insertText": "beforebegin${1::selector}"
+        },
+        {
+          "name": "afterbegin",
+          "description": "Insert inside at the beginning",
+          "kind": "strategy",
+          "insertText": "afterbegin${1::selector}"
+        },
+        {
+          "name": "beforeend",
+          "description": "Insert inside at the end",
+          "kind": "strategy",
+          "insertText": "beforeend${1::selector}"
+        },
+        {
+          "name": "afterend",
+          "description": "Insert after the matching element",
+          "kind": "strategy",
+          "insertText": "afterend${1::selector}"
+        },
+        {
+          "name": "delete",
+          "description": "Delete the matching element",
+          "kind": "strategy"
+        },
+        {
+          "name": "none",
+          "description": "Do not swap response content",
+          "kind": "strategy"
+        },
+        {
+          "name": "innerMorph",
+          "description": "Morph the matching element's contents",
+          "kind": "strategy",
+          "insertText": "innerMorph${1::selector}",
+          "versions": [
+            "4"
+          ]
+        },
+        {
+          "name": "outerMorph",
+          "description": "Morph the matching element",
+          "kind": "strategy",
+          "insertText": "outerMorph${1::selector}",
+          "versions": [
+            "4"
+          ]
+        },
+        {
+          "name": "before",
+          "description": "Alias for beforebegin",
+          "kind": "strategy",
+          "insertText": "before${1::selector}",
+          "versions": [
+            "4"
+          ]
+        },
+        {
+          "name": "after",
+          "description": "Alias for afterend",
+          "kind": "strategy",
+          "insertText": "after${1::selector}",
+          "versions": [
+            "4"
+          ]
+        },
+        {
+          "name": "prepend",
+          "description": "Alias for afterbegin",
+          "kind": "strategy",
+          "insertText": "prepend${1::selector}",
+          "versions": [
+            "4"
+          ]
+        },
+        {
+          "name": "append",
+          "description": "Alias for beforeend",
+          "kind": "strategy",
+          "insertText": "append${1::selector}",
+          "versions": [
+            "4"
+          ]
+        }
+      ],
       "modifiers": [
         "inherited"
       ]
@@ -608,6 +1069,60 @@
         "2": "https://htmx.org/attributes/hx-sync/",
         "4": "https://four.htmx.org/reference/attributes/hx-sync"
       },
+      "examples": {
+        "2": "<input hx-get=\"/search\" hx-sync=\"closest form:abort\">",
+        "4": "<input hx-get=\"/search\" hx-sync=\"closest form:abort\">"
+      },
+      "values": [
+        {
+          "name": "this:drop",
+          "description": "Drop this request while another is active",
+          "kind": "strategy"
+        },
+        {
+          "name": "this:abort",
+          "description": "Abort this request if another is active",
+          "kind": "strategy"
+        },
+        {
+          "name": "this:replace",
+          "description": "Replace the active request",
+          "kind": "strategy"
+        },
+        {
+          "name": "this:queue first",
+          "description": "Queue only the first request",
+          "kind": "strategy"
+        },
+        {
+          "name": "this:queue last",
+          "description": "Queue only the last request",
+          "kind": "strategy"
+        },
+        {
+          "name": "this:queue all",
+          "description": "Queue every request",
+          "kind": "strategy"
+        },
+        {
+          "name": "closest form:abort",
+          "description": "Abort requests on the closest form",
+          "kind": "strategy",
+          "insertText": "closest ${1:form}:abort"
+        },
+        {
+          "name": "closest form:drop",
+          "description": "Drop requests while the closest form is active",
+          "kind": "strategy",
+          "insertText": "closest ${1:form}:drop"
+        },
+        {
+          "name": "closest form:replace",
+          "description": "Replace requests on the closest form",
+          "kind": "strategy",
+          "insertText": "closest ${1:form}:replace"
+        }
+      ],
       "modifiers": [
         "inherited"
       ]
@@ -623,34 +1138,56 @@
         "2": "https://htmx.org/attributes/hx-target/",
         "4": "https://four.htmx.org/reference/attributes/hx-target"
       },
+      "examples": {
+        "2": "<button hx-get=\"/items\" hx-target=\"closest section\">Refresh</button>",
+        "4": "<button hx-get=\"/items\" hx-target=\"closest section\">Refresh</button>"
+      },
       "values": [
         {
           "name": "this",
-          "description": "Target the element itself"
+          "description": "Target the element itself",
+          "kind": "value"
         },
         {
-          "name": "closest ",
-          "description": "Target the closest matching ancestor"
+          "name": "closest",
+          "description": "Target the closest matching ancestor",
+          "kind": "value",
+          "insertText": "closest ${1:selector}"
         },
         {
-          "name": "find ",
-          "description": "Target the first matching descendant"
+          "name": "find",
+          "description": "Target the first matching descendant",
+          "kind": "value",
+          "insertText": "find ${1:selector}"
         },
         {
           "name": "next",
-          "description": "Target the next sibling"
+          "description": "Target the next sibling",
+          "kind": "value",
+          "insertText": "next${1: selector}"
         },
         {
           "name": "previous",
-          "description": "Target the previous sibling"
+          "description": "Target the previous sibling",
+          "kind": "value",
+          "insertText": "previous${1: selector}"
         },
         {
           "name": "host",
-          "description": "Target the shadow host (HTMX 4)"
+          "description": "Target the shadow host",
+          "kind": "value",
+          "versions": [
+            "4"
+          ]
         },
         {
           "name": "global:",
-          "description": "Target outside the current shadow root (HTMX 4)"
+          "description": "Target outside the current shadow root",
+          "kind": "value",
+          "insertText": "global:${1:selector}",
+          "versions": [
+            "4"
+          ]
         }
       ],
       "modifiers": [
@@ -668,62 +1205,101 @@
         "2": "https://htmx.org/attributes/hx-trigger/",
         "4": "https://four.htmx.org/reference/attributes/hx-trigger"
       },
+      "examples": {
+        "2": "<input hx-get=\"/search\" hx-trigger=\"keyup changed delay:300ms\">",
+        "4": "<input hx-get=\"/search\" hx-trigger=\"keyup changed delay:300ms\">"
+      },
       "values": [
         {
           "name": "click",
-          "description": "Trigger on click"
+          "description": "Trigger on click",
+          "kind": "event"
         },
         {
           "name": "change",
-          "description": "Trigger when the value changes"
+          "description": "Trigger when the value changes",
+          "kind": "event"
+        },
+        {
+          "name": "input",
+          "description": "Trigger when the input value changes",
+          "kind": "event"
+        },
+        {
+          "name": "keyup",
+          "description": "Trigger when a key is released",
+          "kind": "event"
         },
         {
           "name": "submit",
-          "description": "Trigger when the form submits"
+          "description": "Trigger when the form submits",
+          "kind": "event"
         },
         {
           "name": "load",
-          "description": "Trigger when the element loads"
+          "description": "Trigger when the element loads",
+          "kind": "event"
         },
         {
           "name": "revealed",
-          "description": "Trigger when scrolled into view"
+          "description": "Trigger when scrolled into view",
+          "kind": "event"
         },
         {
           "name": "intersect",
-          "description": "Trigger when intersecting the viewport"
+          "description": "Trigger when intersecting the viewport",
+          "kind": "event"
         },
         {
-          "name": "every ",
-          "description": "Poll at an interval"
+          "name": "every",
+          "description": "Poll at an interval",
+          "kind": "event",
+          "insertText": "every ${1:1s}"
         },
         {
           "name": "once",
-          "description": "Trigger only once"
+          "description": "Trigger only once",
+          "kind": "modifier"
         },
         {
           "name": "changed",
-          "description": "Trigger only when the value changed"
+          "description": "Trigger only when the value changed",
+          "kind": "modifier"
         },
         {
           "name": "delay:",
-          "description": "Delay the event"
+          "description": "Delay the event",
+          "kind": "modifier",
+          "insertText": "delay:${1:500ms}"
         },
         {
           "name": "throttle:",
-          "description": "Throttle the event"
+          "description": "Throttle the event",
+          "kind": "modifier",
+          "insertText": "throttle:${1:500ms}"
         },
         {
           "name": "from:",
-          "description": "Listen on another element"
+          "description": "Listen on another element",
+          "kind": "modifier",
+          "insertText": "from:${1:selector}"
         },
         {
           "name": "target:",
-          "description": "Filter events by target"
+          "description": "Filter events by target",
+          "kind": "modifier",
+          "insertText": "target:${1:selector}"
         },
         {
           "name": "consume",
-          "description": "Stop parent HTMX triggers"
+          "description": "Stop parent HTMX triggers",
+          "kind": "modifier"
+        },
+        {
+          "name": "queue:",
+          "description": "Choose how events queue during a request",
+          "kind": "modifier",
+          "insertText": "queue:${1|first,last,all,none|}"
         }
       ],
       "modifiers": [
@@ -741,6 +1317,9 @@
         "2": "https://htmx.org/attributes/hx-validate/",
         "4": "https://four.htmx.org/reference/attributes/hx-validate"
       },
+      "examples": {
+        "4": "<input hx-post=\"/submit\" hx-validate=\"true\">"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -756,6 +1335,10 @@
         "2": "https://htmx.org/attributes/hx-vals/",
         "4": "https://four.htmx.org/reference/attributes/hx-vals"
       },
+      "examples": {
+        "2": "<div hx-get=\"/example\" hx-vals='{\"myVal\": \"My Value\"}'>Get Some HTML, Including A Value in the Request</div>\n\n  <div hx-get=\"/example\" hx-vals='js:{myVal: calculateValue()}'>Get Some HTML, Including a Dynamic Value from Javascript in the Request</div>",
+        "4": "<div hx-get=\"/search\" hx-vals='{\"category\": \"books\"}'>\n  Search\n</div>"
+      },
       "modifiers": [
         "inherited",
         "append"
@@ -769,6 +1352,9 @@
       ],
       "documentation": {
         "2": "https://htmx.org/attributes/hx-vars/"
+      },
+      "examples": {
+        "2": "<div hx-get=\"/example\" hx-vars=\"myVar:computeMyVar()\">Get Some HTML, Including A Dynamic Value in the Request</div>"
       },
       "deprecated": "Deprecated in HTMX 2; use hx-vals instead."
     }
@@ -785,6 +1371,10 @@
       "documentation": {
         "2": "https://htmx.org/attributes/hx-on/",
         "4": "https://four.htmx.org/reference/attributes/hx-on"
+      },
+      "examples": {
+        "2": "<button hx-on:click=\"this.classList.toggle('active')\">Toggle</button>",
+        "4": "<button hx-on:click=\"this.classList.toggle('active')\">Toggle</button>"
       }
     },
     {
@@ -796,6 +1386,9 @@
       ],
       "documentation": {
         "2": "https://htmx.org/extensions/response-targets/"
+      },
+      "examples": {
+        "2": "<form hx-post=\"/items\" hx-target-422=\"#errors\"></form>"
       }
     },
     {
@@ -807,6 +1400,9 @@
       ],
       "documentation": {
         "4": "https://four.htmx.org/reference/attributes/hx-status"
+      },
+      "examples": {
+        "4": "<form hx-post=\"/items\" hx-status:422=\"target:#errors\"></form>"
       }
     }
   ]

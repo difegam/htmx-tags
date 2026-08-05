@@ -107,6 +107,13 @@ def test_iter_attribute_docs_wraps_bad_zip_errors() -> None:
         module.iter_attribute_docs(b"not a zip file")
 
 
+def test_extract_html_example_is_bounded_and_attribute_specific() -> None:
+    module = _load_build_data_module()
+    body = """```html\n<div hx-post=\"/wrong\"></div>\n```\n```html\n<button hx-get=\"/items\">Load</button>\n```"""
+    assert module.extract_html_example(body, "hx-get") == '<button hx-get="/items">Load</button>'
+    assert module.extract_html_example("```html\n<div></div>\n```", "hx-get") is None
+
+
 def test_build_catalog_merges_versions_and_metadata(monkeypatch: pytest.MonkeyPatch) -> None:
     module = _load_build_data_module()
     v2 = _archive(
@@ -137,11 +144,27 @@ def test_build_catalog_merges_versions_and_metadata(monkeypatch: pytest.MonkeyPa
 
     result = module.build_catalog("2.0.10", "4.0.0-beta5")
     entries = {entry["name"]: entry for entry in result["attributes"]}
+    assert result["schemaVersion"] == 2
     assert result["generatedFrom"] == {"htmx2": "2.0.10", "htmx4": "4.0.0-beta5"}
     assert entries["hx-get"]["versions"] == ["2", "4"]
     assert entries["hx-get"]["description"] == "GET v4"
     assert entries["hx-status"]["versions"] == ["4"]
     assert entries["hx-method"]["strictValues"] is True
+    assert entries["hx-get"]["examples"] == {
+        "2": module.CURATED_EXAMPLES["hx-get"],
+        "4": module.CURATED_EXAMPLES["hx-get"],
+    }
+    swap_values = {value["name"]: value for value in module.ATTRIBUTE_VALUES["hx-swap"]["values"]}
+    assert swap_values["innerMorph"]["versions"] == ["4"]
+    assert swap_values["swap:"]["insertText"] == "swap:${1:500ms}"
+    oob_values = {
+        value["name"]: value for value in module.ATTRIBUTE_VALUES["hx-swap-oob"]["values"]
+    }
+    assert oob_values["beforeend"]["insertText"] == "beforeend${1::selector}"
+    assert oob_values["innerMorph"]["versions"] == ["4"]
+    assert {"hx-ext", "hx-sync", "hx-params", "hx-disinherit", "hx-swap-oob"} <= set(
+        module.ATTRIBUTE_VALUES
+    )
     assert "hx-ws" not in entries
     assert {pattern["name"] for pattern in result["patterns"]} >= {
         "hx-on:<event>",

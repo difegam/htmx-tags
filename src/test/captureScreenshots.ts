@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -10,8 +10,37 @@ import {
 
 const ROOT = path.resolve(__dirname, "../..");
 const STATE_FILE = path.join(ROOT, ".vscode-test", "screenshot-state");
+const FRAME_DIR = path.join(ROOT, ".vscode-test", "demo-frames");
+const GIF_ENCODER = path.join(ROOT, ".vscode-test", "create-gif");
 const PORT = 9222;
-const STATES = ["completion", "hover", "diagnostics", "partials"] as const;
+let macGifEncoderReady = false;
+const STATES = [
+  "attribute-completions-typing",
+  "attribute-completions-prefix",
+  "attribute-completions-trigger",
+  "attribute-completions-ranked",
+  "attribute-completions-selected",
+  "attribute-completions-details",
+  "context-aware-values-empty",
+  "context-aware-values-strategies",
+  "context-aware-values-strategy-details",
+  "context-aware-values-selected",
+  "context-aware-values-modifier-prefix",
+  "context-aware-values-modifiers",
+  "hover-documentation-start",
+  "hover-documentation-focus",
+  "hover-documentation-rich",
+  "hover-documentation-example",
+  "hover-documentation-actions",
+  "diagnostics",
+  "partials",
+] as const;
+
+const DEMOS: Record<string, readonly string[]> = {
+  "attribute-completions": STATES.slice(0, 6),
+  "context-aware-values": STATES.slice(6, 12),
+  "hover-documentation": STATES.slice(12, 17),
+};
 
 interface DebugTarget {
   type: string;
@@ -83,6 +112,7 @@ async function captureStates(): Promise<void> {
   const client = await waitForWorkbench();
   await client.send("Page.enable");
   mkdirSync(path.join(ROOT, "images"), { recursive: true });
+  mkdirSync(FRAME_DIR, { recursive: true });
 
   for (const state of STATES) {
     for (let attempt = 0; attempt < 200; attempt++) {
@@ -99,19 +129,96 @@ async function captureStates(): Promise<void> {
       format: "png",
       fromSurface: true,
     });
-    writeFileSync(path.join(ROOT, "images", `${state}.png`), Buffer.from(result.data, "base64"));
+    const frame = Buffer.from(result.data, "base64");
+    const demo = Object.entries(DEMOS).find(([, states]) => states.includes(state));
+    if (demo !== undefined) {
+      const [name, states] = demo;
+      writeFileSync(path.join(FRAME_DIR, `${name}-${states.indexOf(state) + 1}.png`), frame);
+      if (state === states.at(-1)) {
+        createGif(name);
+      }
+    } else {
+      writeFileSync(path.join(ROOT, "images", `${state}.png`), frame);
+      copyFileSync(path.join(ROOT, "images", `${state}.png`), path.join(ROOT, "docs/assets/images", `${state}.png`));
+    }
     writeFileSync(`${STATE_FILE}.${state}.ack`, "captured");
   }
   client.close();
 }
 
+function createGif(name: string): void {
+  const output = path.join(ROOT, "images", `${name}.gif`);
+  const ffmpeg = spawnSync(
+    "ffmpeg",
+    [
+      "-y",
+      "-framerate",
+      "1",
+      "-i",
+      path.join(FRAME_DIR, `${name}-%d.png`),
+      "-filter_complex",
+      "[0:v]fps=2,scale=1024:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse",
+      "-loop",
+      "0",
+      output,
+    ],
+    { stdio: "ignore" },
+  );
+  const result = ffmpeg.status === 0 ? ffmpeg : createGifWithImageIo(
+    output,
+    name,
+  );
+  if (result.status !== 0) {
+    throw new Error("ffmpeg or macOS ImageIO is required to generate Marketplace demo GIFs");
+  }
+  copyFileSync(
+    output,
+    path.join(ROOT, "docs/assets/images", `${name}.gif`),
+  );
+}
+
+function createGifWithImageIo(output: string, name: string): ReturnType<typeof spawnSync> {
+  if (process.platform !== "darwin") {
+    throw new Error("ffmpeg is required to generate Marketplace demo GIFs on this platform");
+  }
+  if (!macGifEncoderReady) {
+    const compiler = spawnSync(
+      "clang",
+      [
+        path.join(ROOT, "scripts/create-gif.m"),
+        "-framework",
+        "AppKit",
+        "-framework",
+        "ImageIO",
+        "-framework",
+        "UniformTypeIdentifiers",
+        "-o",
+        GIF_ENCODER,
+      ],
+      { stdio: "inherit" },
+    );
+    if (compiler.status !== 0) {
+      throw new Error("macOS ImageIO is required to generate Marketplace demo GIFs");
+    }
+    macGifEncoderReady = true;
+  }
+  return spawnSync(
+    GIF_ENCODER,
+    [
+      output,
+      ...DEMOS[name].map((_state, index) => path.join(FRAME_DIR, `${name}-${index + 1}.png`)),
+    ],
+    { stdio: "inherit" },
+  );
+}
+
 async function main(): Promise<void> {
   mkdirSync(path.dirname(STATE_FILE), { recursive: true });
   rmSync(STATE_FILE, { force: true });
+  rmSync(FRAME_DIR, { recursive: true, force: true });
   for (const state of STATES) {
     rmSync(`${STATE_FILE}.${state}.ack`, { force: true });
   }
-
   const vscodeExecutablePath = await downloadAndUnzipVSCode("1.90.2");
   const [cliPath, ...cliArgs] = resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
   const install = spawnSync(
@@ -127,7 +234,12 @@ async function main(): Promise<void> {
     vscodeExecutablePath,
     extensionDevelopmentPath: ROOT,
     extensionTestsPath: path.resolve(__dirname, "suite/screenshots"),
-    launchArgs: [`--remote-debugging-port=${PORT}`, "--disable-workspace-trust"],
+    launchArgs: [
+      `--remote-debugging-port=${PORT}`,
+      "--disable-workspace-trust",
+      "--window-size=1200,750",
+      "--force-device-scale-factor=1",
+    ],
   });
   await Promise.all([testRun, captureStates()]);
 }

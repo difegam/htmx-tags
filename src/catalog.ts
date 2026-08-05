@@ -2,10 +2,15 @@ import { readFileSync } from "node:fs";
 
 export type HtmxVersionMode = "compatible" | "2" | "4";
 export type HtmxMajor = "2" | "4";
+export type CatalogValueKind = "value" | "strategy" | "event" | "modifier" | "extension" | "attribute";
 
 export interface CatalogValue {
   name: string;
   description: string;
+  insertText?: string;
+  versions?: HtmxMajor[];
+  kind?: CatalogValueKind;
+  documentation?: string;
 }
 
 export interface CatalogAttribute {
@@ -17,6 +22,7 @@ export interface CatalogAttribute {
   strictValues?: boolean;
   modifiers?: string[];
   deprecated?: string;
+  examples?: Partial<Record<HtmxMajor, string>>;
 }
 
 export interface CatalogPattern {
@@ -25,6 +31,7 @@ export interface CatalogPattern {
   description: string;
   versions: HtmxMajor[];
   documentation: Partial<Record<HtmxMajor, string>>;
+  examples?: Partial<Record<HtmxMajor, string>>;
 }
 
 export interface CatalogData {
@@ -40,6 +47,7 @@ export interface ResolvedAttribute {
   versions: HtmxMajor[];
   description: string;
   documentation: Partial<Record<HtmxMajor, string>>;
+  examples?: Partial<Record<HtmxMajor, string>>;
   attribute?: CatalogAttribute;
   modifier?: string;
   pattern?: CatalogPattern;
@@ -56,7 +64,7 @@ export class CatalogIndex {
   private readonly patterns: Array<{ entry: CatalogPattern; regex: RegExp }>;
 
   constructor(data: CatalogData) {
-    if (data.schemaVersion !== 1 || !Array.isArray(data.attributes) || !Array.isArray(data.patterns)) {
+    if (data.schemaVersion !== 2 || !Array.isArray(data.attributes) || !Array.isArray(data.patterns)) {
       throw new Error("Unsupported HTMX catalog format");
     }
     this.data = data;
@@ -79,6 +87,7 @@ export class CatalogIndex {
           versions: entry.versions,
           description: entry.description,
           documentation: entry.documentation,
+          examples: entry.examples,
           pattern: entry,
         };
       }
@@ -118,6 +127,7 @@ export class CatalogIndex {
       versions: attribute.versions,
       description: attribute.description,
       documentation: attribute.documentation,
+      examples: attribute.examples,
       attribute,
     };
   }
