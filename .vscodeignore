@@ -8,6 +8,7 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+out/test/**
 
 # Git and CI
 .git/**
@@ -26,6 +27,7 @@ vsc-extension-quickstart.md
 
 # Development and test-only files
 tests/**
+examples/**
 docs/**
 site/**
 build-data.py
@@ -36,6 +38,7 @@ prek.toml
 ty.toml
 zensical.toml
 Justfile
+justfile
 
 # Node/tooling files not needed at runtime
 node_modules/**

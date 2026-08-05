@@ -1,4 +1,4 @@
-"""Validation tests for extension metadata and HTML custom data."""
+"""Validate the runtime manifest and generated catalog."""
 
 from __future__ import annotations
 
@@ -6,53 +6,59 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-PACKAGE_JSON_PATH = ROOT / "package.json"
-CUSTOM_DATA_PATH = ROOT / "html.htmx-data.json"
 
 
 def _read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_html_custom_data_is_registered() -> None:
-    manifest = _read_json(PACKAGE_JSON_PATH)
-    custom_data = manifest["contributes"]["html"]["customData"]
-    assert "./html.htmx-data.json" in custom_data
+def test_runtime_provider_manifest() -> None:
+    manifest = _read_json(ROOT / "package.json")
+    assert "html" not in manifest["contributes"]
+    assert manifest["main"] == "./out/extension.js"
+    assert manifest["displayName"] == "HTMX Tags for Django"
+    assert "onLanguage:html" in manifest["activationEvents"]
+    assert "onLanguage:django-html" in manifest["activationEvents"]
+    assert "batisteo.vscode-django" in manifest["extensionDependencies"]
 
 
-def test_django_support_is_declared() -> None:
-    manifest = _read_json(PACKAGE_JSON_PATH)
-    activation_events: list[str] = manifest["activationEvents"]
-    dependencies: list[str] = manifest["extensionDependencies"]
-
-    assert "onLanguage:django-html" in activation_events
-    assert "batisteo.vscode-django" in dependencies
-
-
-def test_custom_data_schema_shape() -> None:
-    data = _read_json(CUSTOM_DATA_PATH)
-    assert data["version"] == 1.1
-    assert isinstance(data["globalAttributes"], list)
-    assert data["globalAttributes"], "globalAttributes should not be empty"
+def test_public_configuration_defaults() -> None:
+    manifest = _read_json(ROOT / "package.json")
+    settings = manifest["contributes"]["configuration"]["properties"]
+    assert settings["htmxTags.enableCompletion"]["default"] is True
+    assert settings["htmxTags.enableHover"]["default"] is True
+    assert settings["htmxTags.enableValidation"]["default"] is True
+    assert settings["htmxTags.version"]["default"] == "compatible"
+    assert settings["htmxTags.version"]["enum"] == ["compatible", "2", "4"]
 
 
-def test_references_use_correct_spelling() -> None:
-    data = _read_json(CUSTOM_DATA_PATH)
-    for attribute in data["globalAttributes"]:
-        assert attribute["references"][0]["name"] == "Official documentation"
+def test_django_snippets_are_registered() -> None:
+    manifest = _read_json(ROOT / "package.json")
+    snippets = manifest["contributes"]["snippets"]
+    assert snippets == [{"language": "django-html", "path": "./snippets/django-htmx.json"}]
+    data = _read_json(ROOT / "snippets" / "django-htmx.json")
+    assert {entry["prefix"] for entry in data.values()} >= {
+        "htmx-post",
+        "htmx-search",
+        "partialdef",
+        "partialdef-inline",
+        "partial",
+    }
 
 
-def test_htmx_2_removed_attributes_are_excluded() -> None:
-    data = _read_json(CUSTOM_DATA_PATH)
-    attribute_names = {attribute["name"] for attribute in data["globalAttributes"]}
+def test_catalog_shape_and_version_union() -> None:
+    catalog = _read_json(ROOT / "htmx.catalog.json")
+    assert catalog["schemaVersion"] == 1
+    assert catalog["generatedFrom"] == {"htmx2": "2.0.10", "htmx4": "4.0.0-beta5"}
+    attributes = {entry["name"]: entry for entry in catalog["attributes"]}
+    assert attributes["hx-get"]["versions"] == ["2", "4"]
+    assert attributes["hx-status"]["versions"] == ["4"]
+    assert "hx-sse" not in attributes
+    assert "hx-ws" not in attributes
+    assert not any(name.startswith("data-hx-") for name in attributes)
 
-    assert "hx-sse" not in attribute_names
-    assert "hx-ws" not in attribute_names
 
-
-def test_htmx_2_hx_on_wildcards_are_present() -> None:
-    data = _read_json(CUSTOM_DATA_PATH)
-    attribute_names = {attribute["name"] for attribute in data["globalAttributes"]}
-
-    assert "hx-on:*" in attribute_names
-    assert "hx-on::*" in attribute_names
+def test_marketplace_assets_are_declared() -> None:
+    manifest = _read_json(ROOT / "package.json")
+    assert manifest["icon"] == "images/icon.png"
+    assert manifest["galleryBanner"]["color"] == "#0C4B33"

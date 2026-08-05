@@ -1,17 +1,123 @@
 [project]
-site_name = "htmx-tags-django"
-site_description = "Documentation for the htmx-tags Django VS Code extension"
+site_name = "HTMX Tags for Django"
+site_description = "Documentation for the HTMX 2/4 and Django template extension for VS Code."
 site_url = "https://github.com/difegam/htmx-tags"
+repo_name = "difegam/htmx-tags"
 repo_url = "https://github.com/difegam/htmx-tags"
 docs_dir = "docs"
+site_dir = "site"
+use_directory_urls = true
+dev_addr = "localhost:1031"
 nav = [
-    { "Overview" = "index.md" },
-    { "Installation" = "installation.md" },
-    { "Development" = "development.md" },
-    { "Architecture" = "architecture.md" },
-    { "Release" = "release.md" },
-    { "Troubleshooting" = "troubleshooting.md" },
+    { Home = "index.md" },
+    { "Start Here" = [
+        { Overview = "start-here/index.md" },
+        { Installation = "start-here/installation.md" },
+        { "First Template" = "start-here/first-template.md" },
+    ] },
+    { Explanation = [
+        { Overview = "explanation/index.md" },
+        { Architecture = "explanation/architecture.md" },
+        { Compatibility = "explanation/compatibility.md" },
+    ] },
+    { Tutorials = [
+        { Overview = "tutorials/index.md" },
+        { "First Docs Build" = "tutorials/first-docs-build.md" },
+        { "First Contribution" = "tutorials/first-contribution.md" },
+    ] },
+    { "How-to Guides" = [
+        { Overview = "how-to/index.md" },
+        { "Author HTMX" = "how-to/author-htmx.md" },
+        { Configuration = "how-to/configuration.md" },
+        { "Django Partials" = "how-to/django-partials.md" },
+        { Troubleshooting = "how-to/troubleshooting.md" },
+    ] },
+    { Operations = [
+        { Overview = "operations/index.md" },
+        { "CI and Packaging" = "operations/ci-and-packaging.md" },
+        { Release = "operations/release.md" },
+    ] },
+    { Reference = [
+        { Overview = "reference/index.md" },
+        { Settings = "reference/settings.md" },
+        { "Catalog and Dynamic Syntax" = "reference/catalog-and-syntax.md" },
+        { Snippets = "reference/snippets.md" },
+    ] },
 ]
 
 [project.theme]
 variant = "modern"
+name = "HTMX Tags for Django"
+logo = "assets/brand/icon.png"
+favicon = "assets/brand/icon.png"
+features = [
+    "content.action.edit",
+    "content.action.view",
+    "content.code.annotate",
+    "content.code.copy",
+    "content.tabs.link",
+    "navigation.expand",
+    "navigation.indexes",
+    "navigation.instant",
+    "navigation.path",
+    "navigation.sections",
+    "navigation.top",
+    "search.highlight",
+    "search.suggest",
+    "toc.follow",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "blue grey"
+accent = "light blue"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "green"
+accent = "light blue"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to light mode"
+
+[project.theme.icon]
+repo = "fontawesome/brands/github"
+previous = "lucide/chevron-left"
+next = "lucide/chevron-right"
+top = "lucide/arrow-up"
+
+[project.theme.font]
+text = "Inter"
+code = "JetBrains Mono"
+
+[project.markdown_extensions]
+admonition = {}
+abbr = {}
+attr_list = {}
+footnotes = {}
+md_in_html = {}
+tables = {}
+
+[project.markdown_extensions.toc]
+permalink = true
+
+[project.markdown_extensions.pymdownx.details]
+
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+    { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+
+[project.markdown_extensions.pymdownx.inlinehilite]
+
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true

@@ -1,38 +1,43 @@
-# htmx-tags documentation
+# HTMX Tags for Django
 
-This documentation is for maintainers and contributors of the `htmx-tags` VS Code extension.
+Documentation for the VS Code extension that provides offline HTMX IntelliSense and same-file Django template partial support.
 
-## Project status snapshot
+![HTMX completion in VS Code](assets/images/completion.png)
 
-As currently implemented in this repository:
+## What is documented here
 
-- Extension package name: `htmx-tags-django`
-- Published version: `0.1.1`
-- VS Code engine requirement: `^1.90.0`
-- htmx docs source used by generator: `2.0.9`
-- Runtime model: static JSON custom data consumed by VS Code HTML features
+Use this site to install the extension, author HTMX attributes, configure HTMX 2/4 behavior, work with Django partials, and maintain the generated catalog and VSIX package.
 
-## What the extension does
+```mermaid
+C4Context
+    Person(author, "Template author", "Edits HTML and Django templates")
+    System(extension, "HTMX Tags for Django", "VS Code extension for HTMX completions, hover, and diagnostics")
+    System_Ext(vscode, "Visual Studio Code", "Extension host and editor")
+    System_Ext(django, "Django extension", "Supplies the django-html language mode")
+    System_Ext(htmxDocs, "HTMX release archives", "Pinned build-time catalog source")
+    Rel(author, vscode, "Edits templates in")
+    Rel(vscode, extension, "Activates by language mode")
+    Rel(extension, django, "Uses django-html language identifier")
+    Rel(htmxDocs, extension, "Build-time catalog input", "HTTPS")
+```
 
-- contributes htmx attributes as HTML custom data
-- provides autocomplete and hover descriptions in HTML and Django template files
-- activates on `html` and `django-html` language files; requires `batisteo.vscode-django` for Django support
-- links attributes to official `https://htmx.org/attributes/<name>/` reference pages
+The installed extension runs locally in VS Code. It reads the committed catalog and does not make runtime network requests; release archives are fetched only when a contributor regenerates the catalog.
 
-## Repository map
+## Start here
 
-- `package.json` — extension manifest and contribution points
-- `src/extension.ts` — extension entry point (declarative, no-op by design)
-- `build-data.py` — generator for custom data
-- `html.htmx-data.json` — generated artifact consumed by VS Code
-- `.vscodeignore` — controls which files are packaged into the VSIX
-- `docs/` — project and maintenance documentation
-- `zensical.toml` — docs site configuration
+| Need                                        | Read                                                  |
+| ------------------------------------------- | ----------------------------------------------------- |
+| Install and verify the extension            | [Installation](start-here/installation.md)            |
+| Create a first HTMX-enabled Django template | [First template](start-here/first-template.md)        |
+| Understand version modes and scope          | [Compatibility](explanation/compatibility.md)         |
+| Configure editor behavior                   | [Configuration](how-to/configuration.md)              |
+| Contribute or package a change              | [First contribution](tutorials/first-contribution.md) |
 
-## Read next
+## Documentation map
 
-- [Installation](installation.md): install extension and run local docs site
-- [Development](development.md): contributor workflow and coding expectations
-- [Architecture](architecture.md): component responsibilities and data flow
-- [Release](release.md): versioning and publish checklist
-- [Troubleshooting](troubleshooting.md): common errors and recovery steps
+- [Start Here](start-here/index.md) covers installation and the first useful template.
+- [Explanation](explanation/index.md) describes the offline runtime model and compatibility behavior.
+- [Tutorials](tutorials/index.md) cover local docs and extension contribution workflows.
+- [How-to Guides](how-to/index.md) solve common authoring, configuration, and partial tasks.
+- [Operations](operations/index.md) covers CI, VSIX inspection, and releases.
+- [Reference](reference/index.md) lists settings, catalog syntax, and snippets.

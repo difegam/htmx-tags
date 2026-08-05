@@ -4,6 +4,7 @@ out/
 .pytest_cache/
 .ruff_cache/
 .ty_cache/
+.vscode-test/
 .DS_Store
 __pycache__/
 *.vsix

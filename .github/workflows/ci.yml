@@ -46,3 +46,19 @@ jobs:
 
             - name: Validate extension data
               run: uv run pytest -q
+
+            - name: Run TypeScript unit tests
+              run: npm run test:unit
+
+            - name: Verify generated catalog is current
+              run: |
+                  npm run build-data
+                  git diff --exit-code -- htmx.catalog.json
+
+            - name: Run VS Code extension-host tests
+              run: xvfb-run -a npm run test:extension
+
+            - name: Package and inspect VSIX
+              run: |
+                  npm run package
+                  npx vsce ls --tree

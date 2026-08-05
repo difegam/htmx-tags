@@ -1,0 +1,79 @@
+{
+  "HTMX GET": {
+    "prefix": "htmx-get",
+    "description": "Django URL-backed HTMX GET button",
+    "body": [
+      "<button hx-get=\"{% url '${1:view-name}' %}\" hx-target=\"${2:#content}\" hx-swap=\"${3:innerHTML}\">",
+      "  ${4:Load}",
+      "</button>"
+    ]
+  },
+  "HTMX CSRF-safe POST": {
+    "prefix": "htmx-post",
+    "description": "CSRF-safe Django form submitted through HTMX",
+    "body": [
+      "<form hx-post=\"{% url '${1:view-name}' %}\" hx-target=\"${2:#content}\" hx-swap=\"${3:innerHTML}\">",
+      "  {% csrf_token %}",
+      "  $0",
+      "</form>"
+    ]
+  },
+  "HTMX DELETE": {
+    "prefix": "htmx-delete",
+    "description": "Django HTMX delete button with confirmation",
+    "body": [
+      "<button hx-delete=\"{% url '${1:view-name}' ${2:object.pk} %}\"",
+      "        hx-confirm=\"${3:Are you sure?}\"",
+      "        hx-target=\"${4:closest .item}\"",
+      "        hx-swap=\"outerHTML\">",
+      "  ${5:Delete}",
+      "</button>"
+    ]
+  },
+  "HTMX Search": {
+    "prefix": "htmx-search",
+    "description": "Debounced Django HTMX search input",
+    "body": [
+      "<input type=\"search\" name=\"${1:q}\"",
+      "       hx-get=\"{% url '${2:search-view}' %}\"",
+      "       hx-trigger=\"keyup changed delay:${3:300ms}\"",
+      "       hx-target=\"${4:#results}\">"
+    ]
+  },
+  "HTMX Infinite Scroll": {
+    "prefix": "htmx-infinite",
+    "description": "Load the next Django page when revealed",
+    "body": [
+      "<div hx-get=\"${1:?page={{ page_obj.next_page_number }}}\"",
+      "     hx-trigger=\"revealed\"",
+      "     hx-swap=\"afterend\">",
+      "  ${2:Loading…}",
+      "</div>"
+    ]
+  },
+  "Django Partial Definition": {
+    "prefix": "partialdef",
+    "description": "Define a Django 6 template partial",
+    "body": [
+      "{% partialdef ${1:partial_name} %}",
+      "  $0",
+      "{% endpartialdef %}"
+    ]
+  },
+  "Django Inline Partial Definition": {
+    "prefix": "partialdef-inline",
+    "description": "Define and render an inline Django 6 template partial",
+    "body": [
+      "{% partialdef ${1:partial_name} inline %}",
+      "  $0",
+      "{% endpartialdef %}"
+    ]
+  },
+  "Render Django Partial": {
+    "prefix": "partial",
+    "description": "Render a same-file Django 6 template partial",
+    "body": [
+      "{% partial ${1:partial_name} %}"
+    ]
+  }
+}

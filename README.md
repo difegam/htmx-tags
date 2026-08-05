@@ -1,67 +1,90 @@
-# htmx-tags (Difegam fork)
+![HTMX Tags for Django](images/marketplace-banner.jpg)
 
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/difegam/htmx-tags?utm_source=oss&utm_medium=github&utm_campaign=difegam%2Fhtmx-tags&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+# HTMX Tags for Django
 
-`htmx-tags` is a VS Code extension that provides autocompletion and hover documentation for HTMX attributes.
+Focused HTMX IntelliSense for HTML and Django templates in VS Code. The extension understands the
+stable HTMX 2 API, the HTMX 4 beta, `data-hx-*` aliases, dynamic attributes, and Django 6 same-file
+template partials without making network requests at runtime.
 
 ## Features
 
-- HTMX attribute completion in HTML files.
-- HTMX hover documentation based on upstream `htmx.org` attribute pages.
-- Django template support via `django-html` activation and dependency on the Django extension.
+- Context-aware `hx-*` and `data-hx-*` attribute completion in `html` and `django-html` files.
+- Quote-aware insertion and documented values for swaps, targets, triggers, encodings, and methods.
+- Hover documentation with version availability and official HTMX links.
+- Compatible diagnostics for clear typos and invalid closed-set values.
+- Dynamic syntax support including `hx-on:*`, `hx-target-4*`, `hx-status:5xx`, `:inherited`, and
+  `:append`.
+- Django 6 `{% partialdef %}` completion, hover, duplicate detection, and unknown-reference checks.
+- Django-focused snippets for common HTMX request and partial patterns.
 
-## HTMX 2.x compatibility updates
+## Editor experience
 
-Aligned with the HTMX 2.0 release guidance:
+| HTMX completion | Rich hover documentation |
+| --- | --- |
+| ![HTMX attribute completion](images/completion.png) | ![HTMX hover documentation](images/hover.png) |
 
-- Removed deprecated `hx-sse` and `hx-ws` from custom attribute data.
-- Added wildcard `hx-on` autocomplete entries for `hx-on:*` and `hx-on::*` syntax.
-- Kept docs generation targeting HTMX `2.0.9` by default in `build-data.py`.
+| Compatible diagnostics | Django partial completion |
+| --- | --- |
+| ![HTMX and Django diagnostics](images/diagnostics.png) | ![Django partial completion](images/partials.png) |
 
-## Django template support
+## Django partials
 
-This extension is validated to support Django templates by:
+Definitions in the current template are offered after `{% partial `:
 
-- Activating on `django-html` language files.
-- Declaring `batisteo.vscode-django` as an extension dependency.
-- Running automated tests that verify both settings.
+```django
+{% partialdef result_card inline %}
+  <article id="result-{{ result.pk }}">{{ result.title }}</article>
+{% endpartialdef %}
+
+{% partial result_card %}
+```
+
+The extension intentionally does not build a project-wide template index or inspect Python view
+references such as `template.html#result_card`.
+
+## Version modes
+
+| Setting | Default | Purpose |
+| --- | --- | --- |
+| `htmxTags.enableCompletion` | `true` | Enable HTMX and Django partial completions. |
+| `htmxTags.enableHover` | `true` | Enable attribute and partial hover information. |
+| `htmxTags.enableValidation` | `true` | Enable HTMX and same-file partial diagnostics. |
+| `htmxTags.version` | `compatible` | Use `compatible`, `2`, or `4`. |
+
+`compatible` accepts the HTMX 2/4 union without version noise. Explicit `2` or `4` modes limit
+completion to that major and show other-version or deprecated syntax as hints rather than errors.
+
+## Django snippets
+
+Type one of these prefixes in a `django-html` document:
+
+- `htmx-get`, `htmx-post`, `htmx-delete`, `htmx-search`, `htmx-infinite`
+- `partialdef`, `partialdef-inline`, `partial`
 
 ## Development
 
-### Tooling
-
-This repository uses modern, update-friendly tooling:
-
-- **TypeScript** for extension scaffold and strict compile checks.
-- **uv** for Python dependency and environment management.
-- **prek** for pre-commit/pre-push hook orchestration.
-- **just** recipes for repeatable local commands.
-- **GitHub Actions** for CI checks.
-
-### Quick start
-
 ```bash
-just init
-just check
+npm install
+npm test
+npm run test:extension
+npm run package
 ```
 
-### Regenerate custom HTMX data
+Regenerate the committed offline catalog from the pinned HTMX `2.0.10` and `4.0.0-beta5` tags:
 
 ```bash
-just build-data
+npm run build-data
 ```
 
-or directly:
+The generated catalog is the only runtime documentation source; the extension does not access the
+network after installation.
 
-```bash
-uv run python build-data.py --htmx-version 2.0.9
-```
+## Documentation
 
-## License
+The [documentation site](docs/index.md) has task-focused installation, HTMX authoring, Django
+partials, configuration, contributor, packaging, and release guides.
 
-`htmx-tags` is licensed under the Apache 2.0 License. See `LICENSE.txt`.
+## License and credits
 
-## Credits
-
-This package is maintained at `difegam/htmx-tags` and is a community fork of the original `otovo/htmx-tags` project.
-All credit for the original idea, data model, and initial implementation goes to the original maintainers and contributors.
+Licensed under Apache 2.0. This community fork is maintained at `difegam/htmx-tags` and builds on
+the original `otovo/htmx-tags` project.

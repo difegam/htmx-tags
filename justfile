@@ -15,7 +15,7 @@ lint:
     uv run ruff check --fix
     uv run ruff format
 
-[doc("Regenerate html.htmx-data.json from upstream HTMX docs")]
+[doc("Regenerate htmx.catalog.json from pinned upstream HTMX docs")]
 build-data:
     uv run python build-data.py
 
@@ -25,20 +25,29 @@ check: lint test
 
 [doc("Run tests")]
 test:
-    uv run pytest -q
+    npm test
+
+[doc("Run the VS Code extension-host smoke tests")]
+test-extension:
+    npm run test:extension
+
+[doc("Format documentation files")]
+[group("docs")]
+docs-format:
+    uvx --cache-dir .cache/uv --with mdformat-ruff --with mdformat-gfm --with mdformat-web --with "mdformat-mkdocs[recommended]" mdformat docs
 
 [doc("build docs and fail on any warning")]
 [group("docs")]
 docs-strict:
-    uv run zensical build --clean --strict
+    uv --cache-dir .cache/uv run zensical build --clean --strict
 
 [doc("serve docs locally with hot reload")]
 [group("docs")]
 docs:
-    @echo 'Serving docs on http://localhost:8000'
-    uv run zensical serve
+    @echo 'Serving docs on http://localhost:1031'
+    uv --cache-dir .cache/uv run zensical serve -a localhost:1031
 
 [doc("build docs site to site/")]
 [group("docs")]
 docs-build:
-    uv run zensical build --clean
+    uv --cache-dir .cache/uv run zensical build --clean

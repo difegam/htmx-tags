@@ -1,0 +1,813 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": {
+    "htmx2": "2.0.10",
+    "htmx4": "4.0.0-beta5"
+  },
+  "attributes": [
+    {
+      "name": "hx-action",
+      "description": "Specifies the URL to receive the request",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-action"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-boost",
+      "description": "Converts links and forms to AJAX",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-boost/",
+        "4": "https://four.htmx.org/reference/attributes/hx-boost"
+      },
+      "values": [
+        {
+          "name": "true",
+          "description": "Enable boosted navigation"
+        },
+        {
+          "name": "false",
+          "description": "Disable boosted navigation"
+        }
+      ],
+      "strictValues": true,
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-config",
+      "description": "Configures request behavior with JSON",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-config"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-confirm",
+      "description": "Shows a confirmation dialog before the request",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-confirm/",
+        "4": "https://four.htmx.org/reference/attributes/hx-confirm"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-delete",
+      "description": "Issues a DELETE request to the specified URL",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-delete/",
+        "4": "https://four.htmx.org/reference/attributes/hx-delete"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-disable",
+      "description": "Disables elements during the request",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-disable/",
+        "4": "https://four.htmx.org/reference/attributes/hx-disable"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-disabled-elt",
+      "description": "The hx-disabled-elt attribute in htmx allows you to specify elements that will have the `disabled` attribute added to them for the duration of the request.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-disabled-elt/"
+      }
+    },
+    {
+      "name": "hx-disinherit",
+      "description": "The hx-disinherit attribute in htmx lets you control how child elements inherit attributes from their parents. This documentation explains how to selectively disable inheritance of specific htmx attributes or all attributes, allowing for more granular control over your web application's behavior.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-disinherit/"
+      }
+    },
+    {
+      "name": "hx-encoding",
+      "description": "Sets the request encoding type",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-encoding/",
+        "4": "https://four.htmx.org/reference/attributes/hx-encoding"
+      },
+      "values": [
+        {
+          "name": "multipart/form-data",
+          "description": "Use multipart form encoding for file uploads"
+        }
+      ],
+      "strictValues": true,
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-ext",
+      "description": "The hx-ext attribute in htmx enables one or more htmx extensions for an element and all its children. You can also use this attribute to ignore an extension that is enabled by a parent element.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-ext/"
+      }
+    },
+    {
+      "name": "hx-get",
+      "description": "Issues a GET request to the specified URL",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-get/",
+        "4": "https://four.htmx.org/reference/attributes/hx-get"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-headers",
+      "description": "Adds custom headers to the request",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-headers/",
+        "4": "https://four.htmx.org/reference/attributes/hx-headers"
+      },
+      "modifiers": [
+        "inherited",
+        "append"
+      ]
+    },
+    {
+      "name": "hx-history",
+      "description": "The hx-history attribute in htmx allows you to prevent sensitive page data from being stored in the browser's localStorage cache during history navigation, ensuring that the page state is retrieved from the server instead when navigating through history.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-history/"
+      }
+    },
+    {
+      "name": "hx-history-elt",
+      "description": "Marks the element to swap on history restore",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-history-elt/",
+        "4": "https://four.htmx.org/reference/attributes/hx-history-elt"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-ignore",
+      "description": "Disables htmx processing for the element",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-ignore"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-include",
+      "description": "Includes additional element values in the request",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-include/",
+        "4": "https://four.htmx.org/reference/attributes/hx-include"
+      },
+      "modifiers": [
+        "inherited",
+        "append"
+      ]
+    },
+    {
+      "name": "hx-indicator",
+      "description": "Specifies the loading indicator element",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-indicator/",
+        "4": "https://four.htmx.org/reference/attributes/hx-indicator"
+      },
+      "modifiers": [
+        "inherited",
+        "append"
+      ]
+    },
+    {
+      "name": "hx-inherit",
+      "description": "The hx-inherit attribute in htmx allows you to explicitly control attribute inheritance behavior between parent and child elements, providing fine-grained control over which htmx attributes are inherited when the default inheritance system is disabled through configuration.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-inherit/"
+      }
+    },
+    {
+      "name": "hx-method",
+      "description": "Specifies the HTTP method for the request",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-method"
+      },
+      "values": [
+        {
+          "name": "get",
+          "description": "Issue a GET request"
+        },
+        {
+          "name": "post",
+          "description": "Issue a POST request"
+        },
+        {
+          "name": "put",
+          "description": "Issue a PUT request"
+        },
+        {
+          "name": "patch",
+          "description": "Issue a PATCH request"
+        },
+        {
+          "name": "delete",
+          "description": "Issue a DELETE request"
+        }
+      ],
+      "strictValues": true,
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-on",
+      "description": "Runs inline JavaScript when an event fires",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-on/",
+        "4": "https://four.htmx.org/reference/attributes/hx-on"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-optimistic",
+      "description": "Shows optimistic content during the request",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-optimistic"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-params",
+      "description": "The hx-params attribute in htmx allows you to filter the parameters that will be submitted with an AJAX request.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-params/"
+      }
+    },
+    {
+      "name": "hx-patch",
+      "description": "Issues a PATCH request to the specified URL",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-patch/",
+        "4": "https://four.htmx.org/reference/attributes/hx-patch"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-post",
+      "description": "Issues a POST request to the specified URL",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-post/",
+        "4": "https://four.htmx.org/reference/attributes/hx-post"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-preload",
+      "description": "Preloads content before the user triggers a request",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-preload"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-preserve",
+      "description": "Preserves the element during swaps",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-preserve/",
+        "4": "https://four.htmx.org/reference/attributes/hx-preserve"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-prompt",
+      "description": "The hx-prompt attribute in htmx allows you to show a prompt before issuing a request. The value of the prompt will be included in the request in the `HX-Prompt` header.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-prompt/"
+      }
+    },
+    {
+      "name": "hx-push-url",
+      "description": "Pushes the URL into browser history",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-push-url/",
+        "4": "https://four.htmx.org/reference/attributes/hx-push-url"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-put",
+      "description": "Issues a PUT request to the specified URL",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-put/",
+        "4": "https://four.htmx.org/reference/attributes/hx-put"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-replace-url",
+      "description": "Replaces the current URL in browser history",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-replace-url/",
+        "4": "https://four.htmx.org/reference/attributes/hx-replace-url"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-request",
+      "description": "The hx-request attribute in htmx allows you to configure the request timeout, whether the request will send credentials, and whether the request will include headers.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-request/"
+      }
+    },
+    {
+      "name": "hx-select",
+      "description": "Controls which part of the response to insert",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-select/",
+        "4": "https://four.htmx.org/reference/attributes/hx-select"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-select-oob",
+      "description": "Picks response elements to swap into the page by ID",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-select-oob/",
+        "4": "https://four.htmx.org/reference/attributes/hx-select-oob"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-status",
+      "description": "Handles responses differently by status code",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-status"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-swap",
+      "description": "Controls how the response is inserted",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-swap/",
+        "4": "https://four.htmx.org/reference/attributes/hx-swap"
+      },
+      "values": [
+        {
+          "name": "innerHTML",
+          "description": "Replace the target's contents"
+        },
+        {
+          "name": "outerHTML",
+          "description": "Replace the target element"
+        },
+        {
+          "name": "textContent",
+          "description": "Replace text without parsing HTML"
+        },
+        {
+          "name": "beforebegin",
+          "description": "Insert before the target"
+        },
+        {
+          "name": "afterbegin",
+          "description": "Insert before the target's first child"
+        },
+        {
+          "name": "beforeend",
+          "description": "Insert after the target's last child"
+        },
+        {
+          "name": "afterend",
+          "description": "Insert after the target"
+        },
+        {
+          "name": "delete",
+          "description": "Delete the target"
+        },
+        {
+          "name": "none",
+          "description": "Do not swap response content"
+        },
+        {
+          "name": "innerMorph",
+          "description": "Morph the target's contents (HTMX 4)"
+        },
+        {
+          "name": "outerMorph",
+          "description": "Morph the target element (HTMX 4)"
+        },
+        {
+          "name": "before",
+          "description": "Alias for beforebegin (HTMX 4)"
+        },
+        {
+          "name": "after",
+          "description": "Alias for afterend (HTMX 4)"
+        },
+        {
+          "name": "prepend",
+          "description": "Alias for afterbegin (HTMX 4)"
+        },
+        {
+          "name": "append",
+          "description": "Alias for beforeend (HTMX 4)"
+        }
+      ],
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-swap-oob",
+      "description": "Marks response elements to swap into the page by ID",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-swap-oob/",
+        "4": "https://four.htmx.org/reference/attributes/hx-swap-oob"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-sync",
+      "description": "Synchronizes requests between elements",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-sync/",
+        "4": "https://four.htmx.org/reference/attributes/hx-sync"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-target",
+      "description": "Controls where the response is inserted",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-target/",
+        "4": "https://four.htmx.org/reference/attributes/hx-target"
+      },
+      "values": [
+        {
+          "name": "this",
+          "description": "Target the element itself"
+        },
+        {
+          "name": "closest ",
+          "description": "Target the closest matching ancestor"
+        },
+        {
+          "name": "find ",
+          "description": "Target the first matching descendant"
+        },
+        {
+          "name": "next",
+          "description": "Target the next sibling"
+        },
+        {
+          "name": "previous",
+          "description": "Target the previous sibling"
+        },
+        {
+          "name": "host",
+          "description": "Target the shadow host (HTMX 4)"
+        },
+        {
+          "name": "global:",
+          "description": "Target outside the current shadow root (HTMX 4)"
+        }
+      ],
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-trigger",
+      "description": "Controls when the element issues a request",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-trigger/",
+        "4": "https://four.htmx.org/reference/attributes/hx-trigger"
+      },
+      "values": [
+        {
+          "name": "click",
+          "description": "Trigger on click"
+        },
+        {
+          "name": "change",
+          "description": "Trigger when the value changes"
+        },
+        {
+          "name": "submit",
+          "description": "Trigger when the form submits"
+        },
+        {
+          "name": "load",
+          "description": "Trigger when the element loads"
+        },
+        {
+          "name": "revealed",
+          "description": "Trigger when scrolled into view"
+        },
+        {
+          "name": "intersect",
+          "description": "Trigger when intersecting the viewport"
+        },
+        {
+          "name": "every ",
+          "description": "Poll at an interval"
+        },
+        {
+          "name": "once",
+          "description": "Trigger only once"
+        },
+        {
+          "name": "changed",
+          "description": "Trigger only when the value changed"
+        },
+        {
+          "name": "delay:",
+          "description": "Delay the event"
+        },
+        {
+          "name": "throttle:",
+          "description": "Throttle the event"
+        },
+        {
+          "name": "from:",
+          "description": "Listen on another element"
+        },
+        {
+          "name": "target:",
+          "description": "Filter events by target"
+        },
+        {
+          "name": "consume",
+          "description": "Stop parent HTMX triggers"
+        }
+      ],
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-validate",
+      "description": "Validates before submitting the request",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-validate/",
+        "4": "https://four.htmx.org/reference/attributes/hx-validate"
+      },
+      "modifiers": [
+        "inherited"
+      ]
+    },
+    {
+      "name": "hx-vals",
+      "description": "Adds values to request parameters",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-vals/",
+        "4": "https://four.htmx.org/reference/attributes/hx-vals"
+      },
+      "modifiers": [
+        "inherited",
+        "append"
+      ]
+    },
+    {
+      "name": "hx-vars",
+      "description": "The hx-vars attribute in htmx allows you to dynamically add to the parameters that will be submitted with an AJAX request. This attribute has been deprecated. We recommend you use the hx-vals attribute that provides the same functionality with safer defaults.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-vars/"
+      },
+      "deprecated": "Deprecated in HTMX 2; use hx-vals instead."
+    }
+  ],
+  "patterns": [
+    {
+      "name": "hx-on:<event>",
+      "pattern": "^hx-on(?:::[a-z0-9_.:-]+|:[a-z0-9_.:-]+|--[a-z0-9_.-]+|-[a-z0-9_.-]+)$",
+      "description": "Handle a DOM or HTMX event inline.",
+      "versions": [
+        "2",
+        "4"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/attributes/hx-on/",
+        "4": "https://four.htmx.org/reference/attributes/hx-on"
+      }
+    },
+    {
+      "name": "hx-target-<status>",
+      "pattern": "^hx-target-(?:error|[1-5](?:[0-9]{2}|[0-9][*x]|[*x]{1,2}))$",
+      "description": "Target responses by HTTP status through the response-targets extension.",
+      "versions": [
+        "2"
+      ],
+      "documentation": {
+        "2": "https://htmx.org/extensions/response-targets/"
+      }
+    },
+    {
+      "name": "hx-status:<status>",
+      "pattern": "^hx-status:[1-5](?:[0-9]{2}|[0-9]x|xx)$",
+      "description": "Override HTMX 4 swap behavior for an HTTP status.",
+      "versions": [
+        "4"
+      ],
+      "documentation": {
+        "4": "https://four.htmx.org/reference/attributes/hx-status"
+      }
+    }
+  ]
+}
