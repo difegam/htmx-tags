@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 export type HtmxVersionMode = "compatible" | "2" | "4";
 export type HtmxMajor = "2" | "4";
 export type CatalogValueKind = "value" | "strategy" | "event" | "modifier" | "extension" | "attribute";
+export type CatalogCategories = Partial<Record<HtmxMajor, string>>;
 
 export interface CatalogValue {
   name: string;
@@ -18,6 +19,7 @@ export interface CatalogAttribute {
   description: string;
   versions: HtmxMajor[];
   documentation: Partial<Record<HtmxMajor, string>>;
+  categories: CatalogCategories;
   values?: CatalogValue[];
   strictValues?: boolean;
   modifiers?: string[];
@@ -31,6 +33,7 @@ export interface CatalogPattern {
   description: string;
   versions: HtmxMajor[];
   documentation: Partial<Record<HtmxMajor, string>>;
+  categories?: CatalogCategories;
   examples?: Partial<Record<HtmxMajor, string>>;
 }
 
@@ -47,6 +50,7 @@ export interface ResolvedAttribute {
   versions: HtmxMajor[];
   description: string;
   documentation: Partial<Record<HtmxMajor, string>>;
+  categories?: CatalogCategories;
   examples?: Partial<Record<HtmxMajor, string>>;
   attribute?: CatalogAttribute;
   modifier?: string;
@@ -87,6 +91,7 @@ export class CatalogIndex {
           versions: entry.versions,
           description: entry.description,
           documentation: entry.documentation,
+          categories: entry.categories,
           examples: entry.examples,
           pattern: entry,
         };
@@ -127,6 +132,7 @@ export class CatalogIndex {
       versions: attribute.versions,
       description: attribute.description,
       documentation: attribute.documentation,
+      categories: attribute.categories,
       examples: attribute.examples,
       attribute,
     };

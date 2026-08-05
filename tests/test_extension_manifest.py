@@ -53,6 +53,15 @@ def test_catalog_shape_and_version_union() -> None:
     assert catalog["generatedFrom"] == {"htmx2": "2.0.10", "htmx4": "4.0.0-beta5"}
     attributes = {entry["name"]: entry for entry in catalog["attributes"]}
     assert attributes["hx-get"]["versions"] == ["2", "4"]
+    assert attributes["hx-get"]["categories"] == {"2": "Core", "4": "Requests"}
+    assert attributes["hx-boost"]["categories"] == {
+        "2": "Additional",
+        "4": "Enhancements",
+    }
+    assert attributes["hx-delete"]["categories"] == {
+        "2": "Additional",
+        "4": "Requests",
+    }
     assert attributes["hx-status"]["versions"] == ["4"]
     assert "hx-sse" not in attributes
     assert "hx-ws" not in attributes

@@ -114,10 +114,49 @@ def test_extract_html_example_is_bounded_and_attribute_specific() -> None:
     assert module.extract_html_example("```html\n<div></div>\n```", "hx-get") is None
 
 
+def test_extract_attribute_categories_supports_both_references() -> None:
+    module = _load_build_data_module()
+    payload = _archive(
+        {
+            "htmx/www/content/reference.md": """
+## Core Attribute Reference {#attributes}
+| [`hx-get`](@/attributes/hx-get.md) | GET |
+| [`hx-on*`](@/attributes/hx-on.md) | Events |
+## Additional Attribute Reference {#attributes-additional}
+| [`hx-boost`](@/attributes/hx-boost.md) | Boost |
+| [`hx-vars`](@/attributes/hx-vars.md) | Deprecated; use [`hx-on*`](@/attributes/hx-on.md) |
+## CSS Class Reference {#classes}
+""",
+            "htmx/www/src/content/reference/index.mdx": """
+export const ATTRIBUTE_GROUPS = [
+  { label: 'Requests', titles: ['hx-get', 'hx-delete'] },
+  { label: 'Enhancements', titles: ['hx-boost'] },
+];
+""",
+        }
+    )
+    assert module.extract_attribute_categories(payload, "2") == {
+        "hx-get": "Core",
+        "hx-on": "Core",
+        "hx-boost": "Additional",
+        "hx-vars": "Additional",
+    }
+    assert module.extract_attribute_categories(payload, "4") == {
+        "hx-get": "Requests",
+        "hx-delete": "Requests",
+        "hx-boost": "Enhancements",
+    }
+
+
 def test_build_catalog_merges_versions_and_metadata(monkeypatch: pytest.MonkeyPatch) -> None:
     module = _load_build_data_module()
     v2 = _archive(
         {
+            "htmx/www/content/reference.md": """
+## Core Attribute Reference
+| [`hx-get`](@/attributes/hx-get.md) | GET |
+## Additional Attribute Reference
+""",
             "htmx/www/content/attributes/hx-get.md": (
                 '+++\ntitle = "hx-get"\ndescription = "GET v2"\n+++\nBody.'
             ),
@@ -128,6 +167,12 @@ def test_build_catalog_merges_versions_and_metadata(monkeypatch: pytest.MonkeyPa
     )
     v4 = _archive(
         {
+            "htmx/www/src/content/reference/index.mdx": """
+export const ATTRIBUTE_GROUPS = [
+  { label: 'Requests', titles: ['hx-get'] },
+  { label: 'Advanced', titles: ['hx-status', 'hx-method'] },
+];
+""",
             "htmx/www/src/content/reference/01-attributes/01-hx-get.md": (
                 '---\ntitle: "hx-get"\ndescription: "GET v4"\n---\nBody.'
             ),
@@ -147,6 +192,7 @@ def test_build_catalog_merges_versions_and_metadata(monkeypatch: pytest.MonkeyPa
     assert result["schemaVersion"] == 2
     assert result["generatedFrom"] == {"htmx2": "2.0.10", "htmx4": "4.0.0-beta5"}
     assert entries["hx-get"]["versions"] == ["2", "4"]
+    assert entries["hx-get"]["categories"] == {"2": "Core", "4": "Requests"}
     assert entries["hx-get"]["description"] == "GET v4"
     assert entries["hx-status"]["versions"] == ["4"]
     assert entries["hx-method"]["strictValues"] is True
@@ -171,18 +217,63 @@ def test_build_catalog_merges_versions_and_metadata(monkeypatch: pytest.MonkeyPa
         "hx-target-<status>",
         "hx-status:<status>",
     }
+    patterns = {pattern["name"]: pattern for pattern in result["patterns"]}
+    assert patterns["hx-on:<event>"]["categories"] == {"2": "Core", "4": "Scripting"}
+    assert "categories" not in patterns["hx-target-<status>"]
+
+
+def test_build_catalog_rejects_missing_attribute_category(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_build_data_module()
+    archive = _archive(
+        {
+            "htmx/www/content/reference.md": """
+## Core Attribute Reference
+| [`hx-post`](@/attributes/hx-post.md) | POST |
+## Additional Attribute Reference
+""",
+            "htmx/www/content/attributes/hx-get.md": (
+                '+++\ntitle = "hx-get"\ndescription = "GET"\n+++\nBody.'
+            ),
+        }
+    )
+    monkeypatch.setattr(module, "fetch_zip_content", lambda _url: archive)
+    with pytest.raises(RuntimeError, match="missing HTMX 2 category for hx-get"):
+        module.build_catalog("2.0.10", "4.0.0-beta5")
 
 
 def test_catalog_serialization_is_deterministic(monkeypatch: pytest.MonkeyPatch) -> None:
     module = _load_build_data_module()
-    archive = _archive(
+    v2 = _archive(
         {
+            "htmx/www/content/reference.md": """
+## Core Attribute Reference
+| [`hx-get`](@/attributes/hx-get.md) | GET |
+## Additional Attribute Reference
+""",
             "htmx/www/content/attributes/hx-get.md": (
                 '+++\ntitle = "hx-get"\ndescription = "GET"\n+++\nBody.'
             )
         }
     )
-    monkeypatch.setattr(module, "fetch_zip_content", lambda _url: archive)
+    v4 = _archive(
+        {
+            "htmx/www/src/content/reference/index.mdx": """
+export const ATTRIBUTE_GROUPS = [
+  { label: 'Requests', titles: ['hx-get'] },
+];
+""",
+            "htmx/www/src/content/reference/01-attributes/01-hx-get.md": (
+                '---\ntitle: "hx-get"\ndescription: "GET"\n---\nBody.'
+            ),
+        }
+    )
+    monkeypatch.setattr(
+        module,
+        "fetch_zip_content",
+        lambda url: v2 if "v2.0.10" in url else v4,
+    )
     first = json.dumps(module.build_catalog("2.0.10", "4.0.0-beta5"), indent=2)
     second = json.dumps(module.build_catalog("2.0.10", "4.0.0-beta5"), indent=2)
     assert first == second

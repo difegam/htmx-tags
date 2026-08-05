@@ -17,6 +17,9 @@
       "examples": {
         "4": "<button hx-action=\"/api/users\" hx-method=\"post\">\n    Create User\n</button>"
       },
+      "categories": {
+        "4": "Advanced"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -35,6 +38,10 @@
       "examples": {
         "2": "<nav hx-boost=\"true\"><a href=\"/account\">Account</a></nav>",
         "4": "<nav hx-boost=\"true\"><a href=\"/account\">Account</a></nav>"
+      },
+      "categories": {
+        "2": "Additional",
+        "4": "Enhancements"
       },
       "values": [
         {
@@ -65,6 +72,9 @@
       "examples": {
         "4": "<button hx-post=\"/api/users\" hx-config='{\"timeout\": 5000}'>\n    Create User\n</button>"
       },
+      "categories": {
+        "4": "Advanced"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -83,6 +93,10 @@
       "examples": {
         "2": "<button hx-delete=\"/account\" hx-confirm=\"Are you sure you wish to delete your account?\">\n  Delete My Account\n</button>",
         "4": "<button hx-delete=\"/account\" hx-confirm=\"Are you sure?\">Delete Account</button>"
+      },
+      "categories": {
+        "2": "Additional",
+        "4": "Request Control"
       },
       "modifiers": [
         "inherited"
@@ -103,6 +117,10 @@
         "2": "<button hx-delete=\"/items/42\" hx-confirm=\"Delete this item?\">Delete</button>",
         "4": "<button hx-delete=\"/items/42\" hx-confirm=\"Delete this item?\">Delete</button>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Requests"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -121,6 +139,10 @@
       "examples": {
         "4": "<button hx-post=\"/submit\" hx-disable=\"this\">Submit</button>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Advanced"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -136,6 +158,9 @@
       },
       "examples": {
         "2": "<button hx-post=\"/example\" hx-disabled-elt=\"this\">\n    Post It!\n</button>"
+      },
+      "categories": {
+        "2": "Additional"
       }
     },
     {
@@ -149,6 +174,9 @@
       },
       "examples": {
         "2": "<section hx-disinherit=\"hx-target hx-swap\"></section>"
+      },
+      "categories": {
+        "2": "Additional"
       },
       "values": [
         {
@@ -171,6 +199,10 @@
       },
       "examples": {
         "4": "<form hx-post=\"/upload\" hx-encoding=\"multipart/form-data\">\n    <input type=\"file\" name=\"file\">\n    <button type=\"submit\">Upload</button>\n</form>"
+      },
+      "categories": {
+        "2": "Additional",
+        "4": "Data"
       },
       "values": [
         {
@@ -195,6 +227,9 @@
       },
       "examples": {
         "2": "<main hx-ext=\"preload,response-targets\"></main>"
+      },
+      "categories": {
+        "2": "Additional"
       },
       "values": [
         {
@@ -316,6 +351,10 @@
         "2": "<button hx-get=\"/items\" hx-target=\"#results\">Load</button>",
         "4": "<button hx-get=\"/items\" hx-target=\"#results\">Load</button>"
       },
+      "categories": {
+        "2": "Core",
+        "4": "Requests"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -335,6 +374,10 @@
         "2": "<div hx-get=\"/example\" hx-headers='{\"myHeader\": \"My Value\"}'>Get Some HTML, Including A Custom Header in the Request</div>\n\n  <div hx-get=\"/example\" hx-headers='js:{myVal: calculateValue()}'>Get Some HTML, Including a Dynamic Custom Header from Javascript in the Request</div>",
         "4": "<div hx-get=\"/data\" hx-headers='{\"myHeader\": \"My Value\"}'>Get Data</div>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Data"
+      },
       "modifiers": [
         "inherited",
         "append"
@@ -351,6 +394,9 @@
       },
       "examples": {
         "2": "<html>\n<body>\n<div hx-history=\"false\">\n ...\n</div>\n</body>\n</html>"
+      },
+      "categories": {
+        "2": "Additional"
       }
     },
     {
@@ -368,6 +414,10 @@
         "2": "<html>\n<body>\n<div id=\"content\" hx-history-elt>\n ...\n</div>\n</body>\n</html>",
         "4": "<main hx-history-elt>\n    <!-- only this element is replaced on back/forward navigation -->\n</main>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "History"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -383,6 +433,9 @@
       },
       "examples": {
         "4": "<div hx-ignore>\n    <!-- htmx will not process any attributes here -->\n</div>"
+      },
+      "categories": {
+        "4": "Advanced"
       },
       "modifiers": [
         "inherited"
@@ -402,6 +455,10 @@
       "examples": {
         "2": "<div>\n    <button hx-post=\"/register\" hx-include=\"[name='email']\">\n        Register!\n    </button>\n    Enter email: <input name=\"email\" type=\"email\"/>\n</div>",
         "4": "<button hx-post=\"/register\" hx-include=\"[name='email']\">Register</button>"
+      },
+      "categories": {
+        "2": "Additional",
+        "4": "Data"
       },
       "modifiers": [
         "inherited",
@@ -423,6 +480,10 @@
         "2": "<div>\n    <button hx-post=\"/example\" hx-indicator=\"#spinner\">\n        Post It!\n    </button>\n    <img  id=\"spinner\" class=\"htmx-indicator\" src=\"/img/bars.svg\" alt=\"Loading...\"/>\n</div>",
         "4": "<button hx-post=\"/submit\" hx-indicator=\"#spinner\">Submit</button>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Advanced"
+      },
       "modifiers": [
         "inherited",
         "append"
@@ -439,6 +500,9 @@
       },
       "examples": {
         "2": "<div hx-target=\"#tab-container\" hx-inherit=\"hx-target\">\n  <a hx-boost=\"true\" href=\"/tab1\">Tab 1</a>\n  <a hx-boost=\"true\" href=\"/tab2\">Tab 2</a>\n  <a hx-boost=\"true\" href=\"/tab3\">Tab 3</a>\n</div>"
+      },
+      "categories": {
+        "2": "Additional"
       }
     },
     {
@@ -452,6 +516,9 @@
       },
       "examples": {
         "4": "<button hx-method=\"post\" hx-url=\"/items\">Save</button>"
+      },
+      "categories": {
+        "4": "Advanced"
       },
       "values": [
         {
@@ -515,6 +582,10 @@
         "2": "<div hx-on:click=\"alert('Clicked!')\">Click</div>",
         "4": "<!-- hx-on:<event>=<js> -->\n\n<dialog hx-on:load=\"this.showModal()\">"
       },
+      "categories": {
+        "2": "Core",
+        "4": "Scripting"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -531,6 +602,9 @@
       "examples": {
         "4": "<div hx-post=\"/like\" hx-optimistic=\"#liked-state\">Like</div>"
       },
+      "categories": {
+        "4": "Enhancements"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -546,6 +620,9 @@
       },
       "examples": {
         "2": "<button hx-post=\"/search\" hx-params=\"not csrfmiddlewaretoken\">Search</button>"
+      },
+      "categories": {
+        "2": "Additional"
       },
       "values": [
         {
@@ -581,6 +658,10 @@
         "2": "<button hx-patch=\"/items/42\" hx-target=\"#item-42\">Patch</button>",
         "4": "<button hx-patch=\"/items/42\" hx-target=\"#item-42\">Patch</button>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Requests"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -600,6 +681,10 @@
         "2": "<form hx-post=\"/items\" hx-target=\"#results\">\n  <button>Save</button>\n</form>",
         "4": "<form hx-post=\"/items\" hx-target=\"#results\">\n  <button>Save</button>\n</form>"
       },
+      "categories": {
+        "2": "Core",
+        "4": "Requests"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -615,6 +700,9 @@
       },
       "examples": {
         "4": "<a href=\"/details\" hx-get=\"/details\" hx-preload=\"mouseenter\">View Details</a>"
+      },
+      "categories": {
+        "4": "Enhancements"
       },
       "modifiers": [
         "inherited"
@@ -635,6 +723,10 @@
         "2": "<div id=\"new_location\">\n    Just relocated the video here\n    <div id=\"video\" hx-preserve></div>\n  </div>",
         "4": "<div id=\"video-player\" hx-preserve=\"true\">...</div>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Advanced"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -650,6 +742,9 @@
       },
       "examples": {
         "2": "<button hx-delete=\"/account\" hx-prompt=\"Enter your account name to confirm deletion\">\n  Delete My Account\n</button>"
+      },
+      "categories": {
+        "2": "Additional"
       }
     },
     {
@@ -666,6 +761,10 @@
       "examples": {
         "2": "<div hx-get=\"/account\" hx-push-url=\"true\">\n  Go to My Account\n</div>",
         "4": "<div hx-get=\"/account\" hx-push-url=\"true\">Go to My Account</div>"
+      },
+      "categories": {
+        "2": "Core",
+        "4": "History"
       },
       "modifiers": [
         "inherited"
@@ -686,6 +785,10 @@
         "2": "<button hx-put=\"/items/42\" hx-target=\"#item-42\">Update</button>",
         "4": "<button hx-put=\"/items/42\" hx-target=\"#item-42\">Update</button>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Requests"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -705,6 +808,10 @@
         "2": "<div hx-get=\"/account\" hx-replace-url=\"true\">\n  Go to My Account\n</div>",
         "4": "<div hx-get=\"/account\" hx-replace-url=\"true\">Go to My Account</div>"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "History"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -720,6 +827,9 @@
       },
       "examples": {
         "2": "<div ... hx-request='{\"timeout\":100}'>\n  ...\n</div>"
+      },
+      "categories": {
+        "2": "Additional"
       }
     },
     {
@@ -736,6 +846,10 @@
       "examples": {
         "2": "<div>\n    <button hx-get=\"/info\" hx-select=\"#info-detail\" hx-swap=\"outerHTML\">\n        Get Info!\n    </button>\n</div>",
         "4": "<button hx-get=\"/page\" hx-select=\"#content\">Load Content</button>"
+      },
+      "categories": {
+        "2": "Core",
+        "4": "Request Control"
       },
       "modifiers": [
         "inherited"
@@ -756,6 +870,10 @@
         "2": "<div>\n   <div id=\"alert\"></div>\n    <button hx-get=\"/info\" \n            hx-select=\"#info-details\" \n            hx-swap=\"outerHTML\"\n            hx-select-oob=\"#alert\">\n        Get Info!\n    </button>\n</div>",
         "4": "<button hx-get=\"/example\" hx-select-oob=\"#alert,#sidebar:afterbegin\">\n  Click Me\n</button>"
       },
+      "categories": {
+        "2": "Core",
+        "4": "Request Control"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -771,6 +889,9 @@
       },
       "examples": {
         "4": "<!-- Show validation errors in a specific container -->\n<form hx-post=\"...\"\n      hx-status:422=\"target:#errors select:#validation-errors\">\n  ...\n</form>\n\n<!-- Suppress swap on server errors -->\n<button hx-post=\"...\" hx-status:5xx=\"swap:none\">Save</button>\n\n<!-- Push a custom URL on 201 Created -->\n<form hx-post=\"...\" hx-status:201=\"push:/items/new\">...</form>"
+      },
+      "categories": {
+        "4": "Advanced"
       },
       "modifiers": [
         "inherited"
@@ -790,6 +911,10 @@
       "examples": {
         "2": "<section hx-get=\"/items\" hx-swap=\"innerHTML swap:300ms\"></section>",
         "4": "<section hx-get=\"/items\" hx-swap=\"innerHTML swap:300ms\"></section>"
+      },
+      "categories": {
+        "2": "Core",
+        "4": "Request Control"
       },
       "values": [
         {
@@ -947,6 +1072,10 @@
         "2": "<aside id=\"notifications\" hx-swap-oob=\"beforeend\"></aside>",
         "4": "<aside id=\"notifications\" hx-swap-oob=\"beforeend\"></aside>"
       },
+      "categories": {
+        "2": "Core",
+        "4": "Request Control"
+      },
       "values": [
         {
           "name": "true",
@@ -1073,6 +1202,10 @@
         "2": "<input hx-get=\"/search\" hx-sync=\"closest form:abort\">",
         "4": "<input hx-get=\"/search\" hx-sync=\"closest form:abort\">"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Advanced"
+      },
       "values": [
         {
           "name": "this:drop",
@@ -1142,6 +1275,10 @@
         "2": "<button hx-get=\"/items\" hx-target=\"closest section\">Refresh</button>",
         "4": "<button hx-get=\"/items\" hx-target=\"closest section\">Refresh</button>"
       },
+      "categories": {
+        "2": "Core",
+        "4": "Request Control"
+      },
       "values": [
         {
           "name": "this",
@@ -1208,6 +1345,10 @@
       "examples": {
         "2": "<input hx-get=\"/search\" hx-trigger=\"keyup changed delay:300ms\">",
         "4": "<input hx-get=\"/search\" hx-trigger=\"keyup changed delay:300ms\">"
+      },
+      "categories": {
+        "2": "Core",
+        "4": "Request Control"
       },
       "values": [
         {
@@ -1320,6 +1461,10 @@
       "examples": {
         "4": "<input hx-post=\"/submit\" hx-validate=\"true\">"
       },
+      "categories": {
+        "2": "Additional",
+        "4": "Advanced"
+      },
       "modifiers": [
         "inherited"
       ]
@@ -1339,6 +1484,10 @@
         "2": "<div hx-get=\"/example\" hx-vals='{\"myVal\": \"My Value\"}'>Get Some HTML, Including A Value in the Request</div>\n\n  <div hx-get=\"/example\" hx-vals='js:{myVal: calculateValue()}'>Get Some HTML, Including a Dynamic Value from Javascript in the Request</div>",
         "4": "<div hx-get=\"/search\" hx-vals='{\"category\": \"books\"}'>\n  Search\n</div>"
       },
+      "categories": {
+        "2": "Core",
+        "4": "Data"
+      },
       "modifiers": [
         "inherited",
         "append"
@@ -1355,6 +1504,9 @@
       },
       "examples": {
         "2": "<div hx-get=\"/example\" hx-vars=\"myVar:computeMyVar()\">Get Some HTML, Including A Dynamic Value in the Request</div>"
+      },
+      "categories": {
+        "2": "Additional"
       },
       "deprecated": "Deprecated in HTMX 2; use hx-vals instead."
     }
@@ -1375,6 +1527,10 @@
       "examples": {
         "2": "<button hx-on:click=\"this.classList.toggle('active')\">Toggle</button>",
         "4": "<button hx-on:click=\"this.classList.toggle('active')\">Toggle</button>"
+      },
+      "categories": {
+        "2": "Core",
+        "4": "Scripting"
       }
     },
     {
@@ -1403,6 +1559,9 @@
       },
       "examples": {
         "4": "<form hx-post=\"/items\" hx-status:422=\"target:#errors\"></form>"
+      },
+      "categories": {
+        "4": "Advanced"
       }
     }
   ]

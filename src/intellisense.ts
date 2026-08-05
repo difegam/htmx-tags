@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 import {
+  type CatalogCategories,
   type CatalogValue,
   type CatalogValueKind,
   type HtmxMajor,
@@ -15,6 +16,7 @@ export interface DocumentationSubject {
   description: string;
   versions: readonly HtmxMajor[];
   documentation: Readonly<Partial<Record<HtmxMajor, string>>>;
+  categories?: Readonly<CatalogCategories>;
   mode: HtmxVersionMode;
   values?: readonly CatalogValue[];
   modifier?: string;
@@ -25,6 +27,34 @@ export interface DocumentationSubject {
 
 export function versionsLabel(versions: readonly string[]): string {
   return `HTMX ${versions.join(" & ")}`;
+}
+
+function categoryEntries(
+  categories: Readonly<CatalogCategories> | undefined,
+  mode: HtmxVersionMode,
+  versions: readonly HtmxMajor[],
+): Array<[HtmxMajor, string]> {
+  const candidates: readonly HtmxMajor[] = mode === "compatible" ? ["2", "4"] : [mode];
+  const majors = candidates.filter((major) => versions.includes(major));
+  return majors.flatMap((major) => {
+    const category = categories?.[major];
+    return category === undefined ? [] : [[major, category]];
+  });
+}
+
+export function attributeMetadataLabel(
+  categories: Readonly<CatalogCategories> | undefined,
+  versions: readonly HtmxMajor[],
+  mode: HtmxVersionMode,
+): string {
+  const entries = categoryEntries(categories, mode, versions);
+  if (entries.length === 0) {
+    return versionsLabel(versions);
+  }
+  if (mode !== "compatible") {
+    return `${entries[0][1]} Attribute · HTMX ${entries[0][0]}`;
+  }
+  return entries.map(([major, category]) => `HTMX ${major}: ${category}`).join(" · ");
 }
 
 export function valuesForMode(
@@ -117,6 +147,13 @@ export function documentationMarkdown(subject: DocumentationSubject): vscode.Mar
 
   markdown.appendMarkdown(`### \`${code(subject.name)}\`\n\n`);
   markdown.appendMarkdown(`$(versions) **${versionsLabel(subject.versions)}**\n\n`);
+  const categories = categoryEntries(subject.categories, subject.mode, subject.versions);
+  if (categories.length > 0) {
+    const label = categories
+      .map(([major, category]) => `HTMX ${major}: ${category} Attribute`)
+      .join(" · ");
+    markdown.appendMarkdown(`$(symbol-enum) **${categories.length === 1 ? "Category" : "Categories"}:** ${label}\n\n`);
+  }
   markdown.appendMarkdown(`${subject.description.trim()}\n\n`);
 
   if (subject.modifier !== undefined) {

@@ -13,6 +13,9 @@ test("catalog contains both pinned HTMX versions", () => {
   assert.equal(catalog.data.schemaVersion, 2);
   assert.deepEqual(catalog.data.generatedFrom, { htmx2: "2.0.10", htmx4: "4.0.0-beta5" });
   assert.equal(catalog.resolve("hx-get")?.versions.join(","), "2,4");
+  assert.deepEqual(catalog.resolve("hx-get")?.categories, { "2": "Core", "4": "Requests" });
+  assert.deepEqual(catalog.resolve("hx-boost")?.categories, { "2": "Additional", "4": "Enhancements" });
+  assert.deepEqual(catalog.resolve("hx-delete")?.categories, { "2": "Additional", "4": "Requests" });
   assert.deepEqual(catalog.resolve("hx-status")?.versions, ["4"]);
 });
 
@@ -37,4 +40,6 @@ test("dynamic issue regressions resolve", () => {
   assert.equal(catalog.resolve("hx-confirm:inherited")?.modifier, "inherited");
   assert.equal(catalog.resolve("hx-headers:append")?.modifier, "append");
   assert.equal(catalog.resolve("hx-status:5xx")?.pattern?.name, "hx-status:<status>");
+  assert.deepEqual(catalog.resolve("hx-on:click")?.categories, { "2": "Core", "4": "Scripting" });
+  assert.equal(catalog.resolve("hx-target-404")?.categories, undefined);
 });

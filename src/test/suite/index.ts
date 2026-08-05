@@ -59,9 +59,13 @@ export async function run(): Promise<void> {
   const hxTarget = hxItems.items.find((item) => labelOf(item) === "hx-target");
   assert.ok(hxGet);
   assert.equal(typeof hxGet.label, "object");
-  assert.match(typeof hxGet.label === "string" ? "" : hxGet.label.detail ?? "", /HTMX 2 & 4/);
+  assert.match(
+    typeof hxGet.label === "string" ? "" : hxGet.label.detail ?? "",
+    /HTMX 2: Core · HTMX 4: Requests/,
+  );
   assert.ok((hxGet.sortText ?? "") < (hxTarget?.sortText ?? ""));
   assert.match(markdownOf(hxGet.documentation), /```html/);
+  assert.match(markdownOf(hxGet.documentation), /HTMX 2: Core Attribute · HTMX 4: Requests Attribute/);
   assert.match(markdownOf(hxGet.documentation), /htmxTags\.copyExample/);
   assert.equal(hxItems.items.some((item) => labelOf(item) === "data-hx-get"), false);
   assert.ok(hxItems.items.find((item) => labelOf(item) === "hx-vars")?.tags?.includes(vscode.CompletionItemTag.Deprecated));
@@ -72,6 +76,15 @@ export async function run(): Promise<void> {
 
   const swapStrategies = await valuesAt('<section hx-swap=""></section>', 'hx-swap="');
   assert.ok(swapStrategies.some((item) => labelOf(item) === "innerHTML"));
+  assert.match(
+    markdownOf(swapStrategies.find((item) => labelOf(item) === "innerHTML")?.documentation),
+    /HTMX 2: Core Attribute · HTMX 4: Request Control Attribute/,
+  );
+  const innerMorphDocumentation = markdownOf(
+    swapStrategies.find((item) => labelOf(item) === "innerMorph")?.documentation,
+  );
+  assert.match(innerMorphDocumentation, /HTMX 4: Request Control Attribute/);
+  assert.doesNotMatch(innerMorphDocumentation, /HTMX 2: Core Attribute/);
   assert.equal(swapStrategies.some((item) => labelOf(item) === "swap:"), false);
   const swapModifiers = await valuesAt('<section hx-swap="innerHTML "></section>', 'hx-swap="innerHTML ');
   assert.ok(swapModifiers.some((item) => labelOf(item) === "swap:"));
@@ -102,8 +115,16 @@ export async function run(): Promise<void> {
 
   await vscode.workspace.getConfiguration("htmxTags").update("version", "2", vscode.ConfigurationTarget.Global);
   assert.equal((await valuesAt('<div hx-swap="">', 'hx-swap="')).some((item) => labelOf(item) === "innerMorph"), false);
+  const v2Items = await completions(html, new vscode.Position(0, 7));
+  const v2Get = v2Items.items.find((item) => labelOf(item) === "hx-get");
+  assert.match(typeof v2Get?.label === "string" ? "" : v2Get?.label.detail ?? "", /Core Attribute · HTMX 2/);
   await vscode.workspace.getConfiguration("htmxTags").update("version", "4", vscode.ConfigurationTarget.Global);
   assert.ok((await valuesAt('<div hx-swap="">', 'hx-swap="')).some((item) => labelOf(item) === "innerMorph"));
+  const v4Items = await completions(html, new vscode.Position(0, 7));
+  const v4Get = v4Items.items.find((item) => labelOf(item) === "hx-get");
+  const v4Status = v4Items.items.find((item) => labelOf(item) === "hx-status:<status>");
+  assert.match(typeof v4Get?.label === "string" ? "" : v4Get?.label.detail ?? "", /Requests Attribute · HTMX 4/);
+  assert.match(typeof v4Status?.label === "string" ? "" : v4Status?.label.detail ?? "", /Advanced Attribute · HTMX 4/);
   await vscode.workspace.getConfiguration("htmxTags").update("version", "compatible", vscode.ConfigurationTarget.Global);
 
   const hoverDocument = await vscode.workspace.openTextDocument({
@@ -118,6 +139,7 @@ export async function run(): Promise<void> {
   assert.ok(hxHovers.length > 0);
   const hoverMarkdown = hxHovers.flatMap((hover) => hover.contents).map(markdownOf).join("\n");
   assert.match(hoverMarkdown, /### `hx-get`/);
+  assert.match(hoverMarkdown, /HTMX 2: Core Attribute · HTMX 4: Requests Attribute/);
   assert.match(hoverMarkdown, /```html/);
   assert.match(hoverMarkdown, /HTMX 2 docs/);
   assert.match(hoverMarkdown, /HTMX 4 docs/);

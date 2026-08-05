@@ -4,7 +4,9 @@ The committed catalog is generated from HTMX `2.0.10` and `4.0.0-beta5` and is t
 
 ## Catalog entries
 
-Every canonical `hx-*` entry can carry a concise description, official HTMX documentation link, supported major versions, deprecation note, documented value suggestions, and supported modifiers. `data-hx-*` is not duplicated in the file; it normalizes to the canonical entry at runtime.
+Every canonical `hx-*` entry carries its official category for each supported major version alongside a concise description and documentation link. HTMX 2 uses Core and Additional; HTMX 4 uses Requests, Request Control, Scripting, Data, History, Enhancements, and Advanced. Entries can also carry a deprecation note, documented value suggestions, and supported modifiers. `data-hx-*` is not duplicated in the file; it normalizes to the canonical entry at runtime.
+
+Completion labels and rich documentation show the category for the configured version. Compatible mode shows both categories when they differ, such as `HTMX 2: Core · HTMX 4: Requests` for `hx-get`.
 
 ## Documented value completion
 

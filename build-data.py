@@ -34,6 +34,24 @@ _FENCED_CODE_PATTERN = re.compile(
     r"```(?:html|htm|django-html)?[^\n]*\n(?P<code>.*?)```",
     re.IGNORECASE | re.DOTALL,
 )
+_V2_CATEGORY_SECTION_PATTERN = re.compile(
+    r"^## (?P<label>Core|Additional) Attribute Reference.*?(?=^## |\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+_V2_CATEGORY_ATTRIBUTE_PATTERN = re.compile(
+    r"^\|\s*\[`(?P<name>hx-[^`]+)`\]\(",
+    re.MULTILINE,
+)
+_V4_ATTRIBUTE_GROUPS_PATTERN = re.compile(
+    r"export const ATTRIBUTE_GROUPS\s*=\s*\[(?P<groups>.*?)\];",
+    re.DOTALL,
+)
+_V4_CATEGORY_PATTERN = re.compile(
+    r"label:\s*['\"](?P<label>[^'\"]+)['\"]\s*,\s*"
+    r"titles:\s*\[(?P<titles>[^]]*)\]",
+    re.DOTALL,
+)
+_V4_CATEGORY_ATTRIBUTE_PATTERN = re.compile(r"['\"](?P<name>hx-[^'\"]+)['\"]")
 
 
 def _value(
@@ -466,6 +484,7 @@ DYNAMIC_PATTERNS: list[dict[str, Any]] = [
             "2": "<button hx-on:click=\"this.classList.toggle('active')\">Toggle</button>",
             "4": "<button hx-on:click=\"this.classList.toggle('active')\">Toggle</button>",
         },
+        "categories": {"2": "Core", "4": "Scripting"},
     },
     {
         "name": "hx-target-<status>",
@@ -482,6 +501,7 @@ DYNAMIC_PATTERNS: list[dict[str, Any]] = [
         "versions": ["4"],
         "documentation": {"4": "https://four.htmx.org/reference/attributes/hx-status"},
         "examples": {"4": '<form hx-post="/items" hx-status:422="target:#errors"></form>'},
+        "categories": {"4": "Advanced"},
     },
 ]
 
@@ -561,6 +581,57 @@ def extract_html_example(body: str, attribute: str) -> str | None:
     return None
 
 
+def extract_attribute_categories(zip_bytes: bytes, major: str) -> dict[str, str]:
+    """Extract the official attribute category map from an HTMX release archive."""
+    if major not in {"2", "4"}:
+        raise ValueError(f"Unsupported HTMX major version: {major}")
+
+    suffix = (
+        "/www/content/reference.md"
+        if major == "2"
+        else "/www/src/content/reference/index.mdx"
+    )
+    try:
+        with zipfile.ZipFile(BytesIO(zip_bytes)) as zip_fd:
+            path = next((name for name in zip_fd.namelist() if name.endswith(suffix)), None)
+            if path is None:
+                raise RuntimeError(f"missing HTMX {major} attribute reference source ({suffix})")
+            source = zip_fd.read(path).decode()
+    except zipfile.BadZipFile as exc:
+        raise RuntimeError(
+            f"invalid ZIP payload when parsing categories bundle ({len(zip_bytes)} bytes): {exc}"
+        ) from exc
+
+    categories: dict[str, str] = {}
+    if major == "2":
+        groups = (
+            (match.group("label"), match.group(0))
+            for match in _V2_CATEGORY_SECTION_PATTERN.finditer(source)
+        )
+        category_names = _V2_CATEGORY_ATTRIBUTE_PATTERN
+    else:
+        container = _V4_ATTRIBUTE_GROUPS_PATTERN.search(source)
+        if container is None:
+            raise RuntimeError("missing HTMX 4 ATTRIBUTE_GROUPS definition")
+        groups = (
+            (match.group("label"), match.group("titles"))
+            for match in _V4_CATEGORY_PATTERN.finditer(container.group("groups"))
+        )
+        category_names = _V4_CATEGORY_ATTRIBUTE_PATTERN
+
+    for label, body in groups:
+        for match in category_names.finditer(body):
+            name = match.group("name").removesuffix("*")
+            previous = categories.setdefault(name, label)
+            if previous != label:
+                raise RuntimeError(
+                    f"conflicting HTMX {major} categories for {name}: {previous}, {label}"
+                )
+    if not categories:
+        raise RuntimeError(f"no HTMX {major} attribute categories found")
+    return categories
+
+
 def iter_attribute_docs(zip_bytes: bytes) -> list[tuple[str, str, str]]:
     """Extract canonical attribute name, summary, and body from either HTMX docs layout."""
     attributes: list[tuple[str, str, str]] = []
@@ -601,9 +672,14 @@ def build_catalog(v2_version: str, v4_version: str) -> dict[str, Any]:
 
     for major, release in sources.items():
         zip_url = f"https://github.com/bigskysoftware/htmx/archive/refs/tags/v{release}.zip"
-        for name, description, body in iter_attribute_docs(fetch_zip_content(zip_url)):
+        archive = fetch_zip_content(zip_url)
+        categories = extract_attribute_categories(archive, major)
+        for name, description, body in iter_attribute_docs(archive):
             if major == "2" and name in REMOVED_IN_HTMX_V2:
                 continue
+            category = categories.get(name)
+            if category is None:
+                raise RuntimeError(f"missing HTMX {major} category for {name}")
             entry = merged.setdefault(
                 name,
                 {
@@ -612,10 +688,12 @@ def build_catalog(v2_version: str, v4_version: str) -> dict[str, Any]:
                     "versions": [],
                     "documentation": {},
                     "examples": {},
+                    "categories": {},
                 },
             )
             entry["versions"].append(major)
             entry["documentation"][major] = _version_docs_url(major, name)
+            entry["categories"][major] = category
             example = extract_html_example(body, name)
             if example is not None:
                 entry["examples"][major] = example

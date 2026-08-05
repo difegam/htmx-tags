@@ -9,6 +9,7 @@ import {
 } from "./catalog.js";
 import { analyzeDocument } from "./diagnostics.js";
 import {
+  attributeMetadataLabel,
   completionKind,
   COPY_EXAMPLE_COMMAND,
   documentationMarkdown,
@@ -81,7 +82,7 @@ function attributeCompletion(
   const item = new vscode.CompletionItem(
     {
       label: spelling,
-      detail: ` · ${versionsLabel(entry.versions)}`,
+      detail: ` · ${attributeMetadataLabel(entry.categories, entry.versions, mode)}`,
       description: entry.description,
     },
     vscode.CompletionItemKind.Property,
@@ -100,6 +101,7 @@ function attributeCompletion(
       description: entry.description,
       versions: entry.versions,
       documentation: entry.documentation,
+      categories: entry.categories,
       mode,
       values: entry.values,
       examples: entry.examples,
@@ -131,12 +133,14 @@ function dynamicCompletion(
   snippet: string,
   detail: string,
   range: vscode.Range,
+  mode: HtmxVersionMode,
   versions: CatalogAttribute["versions"],
   documentation: CatalogAttribute["documentation"],
   examples?: CatalogAttribute["examples"],
+  categories?: CatalogAttribute["categories"],
 ): vscode.CompletionItem {
   const item = new vscode.CompletionItem(
-    { label, detail: ` · ${versionsLabel(versions)}`, description: detail },
+    { label, detail: ` · ${attributeMetadataLabel(categories, versions, mode)}`, description: detail },
     vscode.CompletionItemKind.Property,
   );
   item.detail = "Dynamic HTMX attribute";
@@ -150,7 +154,8 @@ function dynamicCompletion(
       description: detail,
       versions,
       documentation,
-      mode: "compatible",
+      categories,
+      mode,
       examples,
     }),
   );
@@ -441,6 +446,7 @@ function valueCompletionItems(
         description: value.description,
         versions,
         documentation: entry.documentation,
+        categories: entry.categories,
         relatedDocumentation: value.documentation,
         mode,
         example: valueExample(attribute.name, value),
@@ -515,18 +521,22 @@ async function provideCompletions(
       `${alias}hx-on:\${1:event}=\"$0\"`,
       "Handle a DOM event inline",
       range,
+        mode,
         hxOn.versions,
         hxOn.documentation,
         hxOn.examples,
+        hxOn.categories,
       ),
     dynamicCompletion(
       `${alias}hx-on::<event>`,
       `${alias}hx-on::\${1:before-request}=\"$0\"`,
       "Handle an HTMX event inline",
       range,
+        mode,
         hxOn.versions,
         hxOn.documentation,
         hxOn.examples,
+        hxOn.categories,
       ),
   );
   }
@@ -539,9 +549,11 @@ async function provideCompletions(
         `${alias}hx-target-\${1:4*}=\"\${2:#errors}\"`,
         "Response Targets extension",
         range,
+          mode,
           responseTargets.versions,
           responseTargets.documentation,
           responseTargets.examples,
+          responseTargets.categories,
       ),
     );
     }
@@ -555,9 +567,11 @@ async function provideCompletions(
         `${alias}hx-status:\${1:422}=\"\${2:target:#errors}\"`,
         "HTMX 4 status-specific response handling",
         range,
+          mode,
           status.versions,
           status.documentation,
           status.examples,
+          status.categories,
       ),
     );
     }
@@ -595,6 +609,7 @@ function provideHover(
       description: resolved.description,
       versions: resolved.versions,
       documentation: resolved.documentation,
+      categories: resolved.categories,
       mode: versionMode(document),
       values: resolved.attribute?.values,
       modifier: resolved.modifier,
