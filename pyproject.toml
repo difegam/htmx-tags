@@ -1,7 +1,7 @@
 [project]
 name = "htmx-tags-tools"
 version = "0.1.1"
-description = "Developer tooling for htmx-tags"
+description = "Developer tooling for HTMX Tags for Django"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = ["packaging>=24", "pydantic>=2", "httpx2", "cyclopts>=3"]

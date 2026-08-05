@@ -109,6 +109,13 @@ npm run test:extension
 npm run package
 ```
 
+The catalog and snippet build tooling is Python (`htmx_tools/`), managed with `uv`:
+
+```bash
+uv sync --all-groups
+uv run pytest -q
+```
+
 Regenerate the committed offline catalog from the pinned HTMX `2.0.10` and `4.0.0-beta6` tags:
 
 ```bash
@@ -126,6 +133,10 @@ npm run build-snippets
 
 Read the [full documentation](docs/index.md) for setup, HTMX authoring, partials, configuration, packaging, and release guidance.
 
+## Project history
+
+This project started from [otovo/htmx-tags](https://github.com/otovo/htmx-tags), which offered plain HTMX tag completion for HTML files. It has since diverged into an independent, Django-focused toolchain: a dual-version (HTMX 2/4) offline catalog with diagnostics and quick fixes, and Django 6 `{% partialdef %}`/`{% partial %}` IntelliSense modeled on [django-template-partials](https://github.com/carltongibson/django-template-partials) — none of which exists in the original project or in other generic HTMX completion extensions.
+
 ## License
 
-Licensed under Apache 2.0. This community fork is maintained at [difegam/htmx-tags](https://github.com/difegam/htmx-tags) and builds on the original [otovo/htmx-tags](https://github.com/otovo/htmx-tags).
+Licensed under Apache 2.0. Maintained independently at [difegam/htmx-tags](https://github.com/difegam/htmx-tags).

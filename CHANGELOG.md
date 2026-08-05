@@ -35,4 +35,4 @@ The project follows [Keep a Changelog](https://keepachangelog.com/) conventions 
 
 ## [0.1.1] — initial Marketplace publish
 
-- Fork from `otovo/htmx-tags` with the Django partial toolchain and HTMX `4.0.0-beta5` catalog layer.
+- Started from `otovo/htmx-tags` (plain HTMX tag completion); this release added the Django partial toolchain and HTMX `4.0.0-beta5` catalog layer, the point at which the project's scope diverged.
