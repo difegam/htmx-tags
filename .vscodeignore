@@ -8,3 +8,40 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+
+# Git and CI
+.git/**
+.github/**
+
+# Python and local environments
+.venv/**
+**/__pycache__/**
+*.pyc
+.python-version
+
+# Local caches
+.cache/**
+.pytest_cache/**
+.ruff_cache/**
+
+# Development and test-only files
+tests/**
+docs/**
+site/**
+build-data.py
+pyproject.toml
+uv.lock
+ruff.toml
+prek.toml
+ty.toml
+zensical.toml
+Justfile
+
+# Node/tooling files not needed at runtime
+node_modules/**
+package-lock.json
+eslint.config.mjs
+
+# Media/demo assets not required for runtime
+demo-1.png
+demo-2.png

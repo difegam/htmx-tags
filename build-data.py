@@ -22,6 +22,26 @@ DEFAULT_HTMX_VERSION = "2.0.9"
 DEFAULT_OUTPUT_FILE = Path("html.htmx-data.json")
 REMOVED_IN_HTMX_V2 = {"hx-sse", "hx-ws"}
 FRONT_MATTER_PATTERN = re.compile(r"^\s*\+\+\+\s*\n.*?\n\+\+\+\s*(?:\n|$)", re.DOTALL)
+_HTMX_INTERNAL_LINK_PATTERN = re.compile(r"@/([^\s)\]\"']+)")
+
+
+def _resolve_htmx_link(match: re.Match[str]) -> str:
+    """Convert a single @/-prefixed HTMX internal doc path to an absolute URL."""
+    path = match.group(1)  # e.g. "attributes/hx-target.md" or "docs.md#parameters"
+    # Split off any fragment anchor
+    if "#" in path:
+        path_part, fragment = path.split("#", 1)
+        anchor = f"#{fragment}"
+    else:
+        path_part, anchor = path, ""
+    # Strip trailing ".md" and convert to URL path segment
+    url_path = path_part.removesuffix(".md")
+    return f"https://htmx.org/{url_path}/{anchor}"
+
+
+def resolve_htmx_links(text: str) -> str:
+    """Replace all @/-prefixed internal HTMX doc links with absolute https://htmx.org/ URLs."""
+    return _HTMX_INTERNAL_LINK_PATTERN.sub(_resolve_htmx_link, text)
 
 
 def build_base_payload() -> dict[str, Any]:
@@ -134,14 +154,20 @@ def apply_htmx_v2_adjustments(payload: dict[str, Any]) -> dict[str, Any]:
     hx_on_wildcards: list[dict[str, Any]] = [
         {
             "name": "hx-on:*",
-            "description": "HTMX 2.x event handler syntax using `hx-on:<event-name>` (for example `hx-on:click`).",
+            "description": {
+                "kind": "markdown",
+                "value": "HTMX 2.x event handler syntax using `hx-on:<event-name>` (for example `hx-on:click`).",
+            },
             "references": [
                 {"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}
             ],
         },
         {
             "name": "hx-on::*",
-            "description": "HTMX shorthand syntax for internal events using `hx-on::<event-name>`, such as `hx-on::before-request`.",
+            "description": {
+                "kind": "markdown",
+                "value": "HTMX shorthand syntax for internal events using `hx-on::<event-name>`, such as `hx-on::before-request`.",
+            },
             "references": [
                 {"name": "Official documentation", "url": "https://htmx.org/attributes/hx-on/"}
             ],
@@ -167,7 +193,10 @@ def build_payload(htmx_version: str) -> dict[str, Any]:
     for attribute, description in iter_attribute_docs(zip_bytes):
         entry: dict[str, Any] = {
             "name": attribute,
-            "description": description,
+            "description": {
+                "kind": "markdown",
+                "value": resolve_htmx_links(description),
+            },
             "references": [
                 {
                     "name": "Official documentation",

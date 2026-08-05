@@ -12,6 +12,14 @@ htmx release docs zip
 
 ## Component responsibilities
 
+### `src/extension.ts`
+
+The extension entry point. By design, it is fully declarative:
+
+- `activate()` and `deactivate()` are no-ops
+- All functionality is provided via static custom data registered in `package.json`
+- This eliminates runtime VS Code API calls and extension activation overhead
+
 ### `package.json`
 
 Defines extension metadata and registers the custom data source:

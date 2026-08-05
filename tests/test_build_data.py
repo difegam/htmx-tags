@@ -156,3 +156,107 @@ def test_build_payload_v2_applies_v2_adjustments(monkeypatch: pytest.MonkeyPatch
     assert "hx-ws" not in names
     assert "hx-on:*" in names
     assert "hx-on::*" in names
+
+
+# ---------------------------------------------------------------------------
+# resolve_htmx_links
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_htmx_links_attribute_path() -> None:
+    module = _load_build_data_module()
+    text = "See [hx-target](@/attributes/hx-target.md) for details."
+    result = module.resolve_htmx_links(text)
+    assert "https://htmx.org/attributes/hx-target/" in result
+    assert "@/" not in result
+
+
+def test_resolve_htmx_links_docs_with_anchor() -> None:
+    module = _load_build_data_module()
+    text = "documented here: [Parameters](@/docs.md#parameters)"
+    result = module.resolve_htmx_links(text)
+    assert "https://htmx.org/docs/#parameters" in result
+    assert "@/" not in result
+
+
+def test_resolve_htmx_links_examples_path() -> None:
+    module = _load_build_data_module()
+    text = "shown [in this example](@/examples/confirm.md)."
+    result = module.resolve_htmx_links(text)
+    assert "https://htmx.org/examples/confirm/" in result
+    assert "@/" not in result
+
+
+def test_resolve_htmx_links_api_with_anchor() -> None:
+    module = _load_build_data_module()
+    text = "[`htmx.trigger()`](@/api.md#trigger)"
+    result = module.resolve_htmx_links(text)
+    assert "https://htmx.org/api/#trigger" in result
+    assert "@/" not in result
+
+
+def test_resolve_htmx_links_headers_path() -> None:
+    module = _load_build_data_module()
+    text = "The [`HX-Push-Url` response header](@/headers/hx-push-url.md)"
+    result = module.resolve_htmx_links(text)
+    assert "https://htmx.org/headers/hx-push-url/" in result
+    assert "@/" not in result
+
+
+def test_resolve_htmx_links_reference_with_anchor() -> None:
+    module = _load_build_data_module()
+    text = "[`HX-Boosted`](@/reference.md#request_headers)"
+    result = module.resolve_htmx_links(text)
+    assert "https://htmx.org/reference/#request_headers" in result
+    assert "@/" not in result
+
+
+def test_resolve_htmx_links_no_internal_links_unchanged() -> None:
+    module = _load_build_data_module()
+    text = "Use [htmx.org](https://htmx.org/) for documentation."
+    assert module.resolve_htmx_links(text) == text
+
+
+def test_resolve_htmx_links_multiple_links_in_one_string() -> None:
+    module = _load_build_data_module()
+    text = "See [hx-swap](@/attributes/hx-swap.md) and [hx-trigger](@/attributes/hx-trigger.md)."
+    result = module.resolve_htmx_links(text)
+    assert "https://htmx.org/attributes/hx-swap/" in result
+    assert "https://htmx.org/attributes/hx-trigger/" in result
+    assert "@/" not in result
+
+
+# ---------------------------------------------------------------------------
+# MarkupContent description format
+# ---------------------------------------------------------------------------
+
+
+def test_build_payload_description_is_markup_content(monkeypatch: pytest.MonkeyPatch) -> None:
+    module = _load_build_data_module()
+
+    monkeypatch.setattr(module, "fetch_zip_content", lambda _url: b"")
+    monkeypatch.setattr(
+        module,
+        "iter_attribute_docs",
+        lambda _bytes: [("hx-get", "Issues a GET request.")],
+    )
+
+    result = module.build_payload("1.9.12")
+    attr = next(e for e in result["globalAttributes"] if e["name"] == "hx-get")
+    desc = attr["description"]
+    assert isinstance(desc, dict), "description should be a MarkupContent dict"
+    assert desc["kind"] == "markdown"
+    assert "Issues a GET request." in desc["value"]
+
+
+def test_apply_htmx_v2_adjustments_hx_on_descriptions_are_markup_content() -> None:
+    module = _load_build_data_module()
+
+    payload = {"globalAttributes": []}
+    adjusted = module.apply_htmx_v2_adjustments(payload)
+
+    for entry in adjusted["globalAttributes"]:
+        if entry["name"] in {"hx-on:*", "hx-on::*"}:
+            desc = entry["description"]
+            assert isinstance(desc, dict), f"{entry['name']} description should be MarkupContent"
+            assert desc["kind"] == "markdown"

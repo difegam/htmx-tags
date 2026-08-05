@@ -25,7 +25,9 @@ If you use Django templates, the extension activates on `django-html` files and 
 1. Confirm attribute suggestions appear
 1. Hover an `hx-*` attribute and confirm docs render
 
-## Local documentation setup (Zensical)
+## For contributors: local documentation setup (Zensical)
+
+> **Note:** This section is for contributors. End users can skip to the next section.
 
 Docs are configured using `zensical.toml` and written in `docs/`.
 
@@ -43,4 +45,4 @@ uv sync --group docs
 uv run zensical serve
 ```
 
-The local docs server starts at `http://127.0.0.1:8000`.
+The local docs server starts at `http://localhost:8000`.

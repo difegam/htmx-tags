@@ -14,7 +14,8 @@
     "url": "https://github.com/difegam/htmx-tags/issues"
   },
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.90.0",
+    "node": "^20.19.0 || ^22.13.0 || >=24"
   },
   "categories": [
     "Programming Languages"
