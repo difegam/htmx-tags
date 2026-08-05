@@ -11,14 +11,14 @@ uv sync --all-groups
 
 ## Choose the source of truth
 
-| Change                                     | Primary location                        |
-| ------------------------------------------ | --------------------------------------- |
-| Attribute or version metadata              | `build-data.py` and `htmx.catalog.json` |
-| Name parsing or Django partial recognition | `src/scanner.ts`                        |
-| Resolution rules                           | `src/catalog.ts`                        |
-| Validation behavior                        | `src/diagnostics.ts`                    |
-| VS Code provider behavior                  | `src/extension.ts`                      |
-| Django snippet                             | `snippets/django-htmx.source.json`      |
+| Change                                     | Primary location                                |
+| ------------------------------------------ | ----------------------------------------------- |
+| Attribute or version metadata              | `htmx_tools/catalog.py` and `htmx.catalog.json` |
+| Name parsing or Django partial recognition | `src/scanner.ts`                                |
+| Resolution rules                           | `src/catalog.ts`                                |
+| Validation behavior                        | `src/diagnostics.ts`                            |
+| VS Code provider behavior                  | `src/extension.ts`                              |
+| Django snippet                             | `snippets/django-htmx.source.json`              |
 
 Add or update the focused Node or Python test that fails before the change. Regenerate the HTMX
 catalog only when its generator inputs or metadata change. Run `npm run build-snippets` after a

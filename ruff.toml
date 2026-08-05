@@ -12,4 +12,4 @@ quote-style = "double"
 indent-style = "space"
 
 [lint.per-file-ignores]
-"build-data.py" = ["E501"]
+"htmx_tools/catalog.py" = ["E501"]

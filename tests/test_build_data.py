@@ -2,24 +2,17 @@
 
 from __future__ import annotations
 
-import importlib.util
 import io
 import json
 import zipfile
-from pathlib import Path
-from urllib.error import URLError
 
+import httpx2
 import pytest
+
+from htmx_tools import catalog as module
 
 
 def _load_build_data_module():
-    root = Path(__file__).resolve().parent.parent
-    module_path = root / "build-data.py"
-    spec = importlib.util.spec_from_file_location("build_data", module_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError("Unable to load build-data.py module")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
     return module
 
 
@@ -37,15 +30,15 @@ def test_default_versions_are_pinned() -> None:
     assert module.DEFAULT_HTMX_V4_VERSION == "4.0.0-beta6"
 
 
-def test_fetch_zip_content_wraps_url_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_fetch_zip_content_wraps_url_errors() -> None:
     module = _load_build_data_module()
 
-    def _raise_url_error(_url: str, timeout: int | float | None = None):
-        raise URLError("network blocked")
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        raise httpx2.ConnectError("network blocked")
 
-    monkeypatch.setattr(module, "urlopen", _raise_url_error)
+    client = httpx2.Client(transport=httpx2.MockTransport(handler))
     with pytest.raises(RuntimeError, match="Unable to reach HTMX archive"):
-        module.fetch_zip_content("https://example.com/archive.zip")
+        module.fetch_zip_content("https://example.com/archive.zip", client=client)
 
 
 def test_fetch_zip_content_rejects_non_https() -> None:

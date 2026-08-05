@@ -4,7 +4,7 @@ The extension turns a committed HTMX catalog and one shared scanner into editor 
 
 ```mermaid
 flowchart LR
-    Archives["Pinned HTMX 2 and 4 archives"] --> Generator["build-data.py"]
+    Archives["Pinned HTMX 2 and 4 archives"] --> Generator["htmx_tools/catalog.py"]
     Generator --> Catalog["htmx.catalog.json"]
     Catalog --> Runtime["Catalog index"]
     Source["HTML, Django HTML, or Python document"] --> Scanner["Shared scanner"]
@@ -25,7 +25,7 @@ flowchart LR
 
 ## Build-time catalog
 
-`build-data.py` merges HTMX `2.0.10` and `4.0.0-beta6` documentation into `htmx.catalog.json`. Each canonical attribute records descriptions, available major versions, version-specific official categories, documentation URLs, documented values, modifiers, deprecation metadata, and dynamic-name patterns. HTMX 2 categories come from its Core and Additional reference tables; HTMX 4 categories come from its exported attribute groups. The generated file is committed and CI regenerates it to detect drift.
+`htmx_tools/catalog.py` (run via `htmx-tools build-data`) merges HTMX `2.0.10` and `4.0.0-beta6` documentation into `htmx.catalog.json`. Each canonical attribute records descriptions, available major versions, version-specific official categories, documentation URLs, documented values, modifiers, deprecation metadata, and dynamic-name patterns. HTMX 2 categories come from its Core and Additional reference tables; HTMX 4 categories come from its exported attribute groups. The generated file is committed and CI regenerates it to detect drift.
 
 ## Runtime providers
 

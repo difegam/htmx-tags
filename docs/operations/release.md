@@ -5,7 +5,7 @@ Release a version only after the committed catalog, source, docs, and VSIX have 
 ## Prepare
 
 1. Update the extension version in `package.json`.
-1. Decide whether the pinned HTMX 2/4 release constants in `build-data.py` need an update.
+1. Decide whether the pinned HTMX 2/4 release constants in `htmx_tools/catalog.py` need an update.
 1. Regenerate the catalog if generator logic, source versions, or catalog metadata changed.
 1. Update user-visible docs and release notes for changed behavior.
 

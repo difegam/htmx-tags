@@ -19,6 +19,7 @@ out/**
 .github/**
 
 # Python and local environments
+htmx_tools/**
 .venv/**
 **/__pycache__/**
 *.pyc

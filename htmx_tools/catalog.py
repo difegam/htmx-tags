@@ -1,10 +1,7 @@
-#!/usr/bin/env python3
 """Generate the offline HTMX 2/4 catalog consumed by the VS Code extension."""
 
 from __future__ import annotations
 
-import argparse
-import json
 import logging
 import re
 import tomllib
@@ -12,9 +9,12 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any
-from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-from urllib.request import urlopen
+
+import httpx2
+
+from htmx_tools.http import make_client
+from htmx_tools.models import Catalog
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_HTMX_V2_VERSION = "2.0.10"
@@ -519,22 +519,26 @@ def resolve_htmx_links(text: str) -> str:
     return _INTERNAL_LINK_PATTERN.sub(_resolve_htmx_link, text)
 
 
-def fetch_zip_content(zip_url: str) -> bytes:
+def fetch_zip_content(zip_url: str, client: httpx2.Client | None = None) -> bytes:
     """Fetch a ZIP archive over HTTPS."""
     parsed_url = urlparse(zip_url)
     if parsed_url.scheme != "https":
         raise ValueError(f"Invalid archive URL scheme '{parsed_url.scheme}'. Expected 'https'.")
 
     LOGGER.info("Downloading htmx docs archive: %s", zip_url)
+    owns_client = client is None
+    client = client or make_client(timeout=30, follow_redirects=True)
     try:
-        with urlopen(zip_url, timeout=30) as response:
-            if response.status != 200:
-                raise RuntimeError(f"Unexpected status code: {response.status}")
-            return response.read()
-    except HTTPError as exc:
-        raise RuntimeError(f"Unable to download HTMX archive ({exc.code}): {zip_url}") from exc
-    except URLError as exc:
-        raise RuntimeError(f"Unable to reach HTMX archive: {zip_url} ({exc.reason})") from exc
+        try:
+            response = client.get(zip_url)
+        except httpx2.HTTPError as exc:
+            raise RuntimeError(f"Unable to reach HTMX archive: {zip_url} ({exc})") from exc
+        if response.status_code != 200:
+            raise RuntimeError(f"Unexpected status code: {response.status_code}")
+        return response.content
+    finally:
+        if owns_client:
+            client.close()
 
 
 def parse_document(markdown: str) -> tuple[dict[str, str], str]:
@@ -713,30 +717,12 @@ def build_catalog(v2_version: str, v4_version: str) -> dict[str, Any]:
         elif not entry["examples"]:
             del entry["examples"]
 
-    return {
-        "schemaVersion": 2,
-        "generatedFrom": {"htmx2": v2_version, "htmx4": v4_version},
-        "attributes": [merged[name] for name in sorted(merged)],
-        "patterns": DYNAMIC_PATTERNS,
-    }
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--htmx-v2-version", default=DEFAULT_HTMX_V2_VERSION)
-    parser.add_argument("--htmx-v4-version", default=DEFAULT_HTMX_V4_VERSION)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_FILE)
-    return parser.parse_args()
-
-
-def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    args = parse_args()
-    catalog = build_catalog(args.htmx_v2_version, args.htmx_v4_version)
-    args.output.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
-    LOGGER.info("Wrote %s with %s attributes", args.output, len(catalog["attributes"]))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+    catalog = Catalog.model_validate(
+        {
+            "schemaVersion": 2,
+            "generatedFrom": {"htmx2": v2_version, "htmx4": v4_version},
+            "attributes": [merged[name] for name in sorted(merged)],
+            "patterns": DYNAMIC_PATTERNS,
+        }
+    )
+    return catalog.model_dump(exclude_none=True)

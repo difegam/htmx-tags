@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
 from pathlib import Path
 
 import pytest
+
+from htmx_tools import snippets as _snippets_module
 
 ROOT = Path(__file__).resolve().parent.parent
 EXPECTED_PREFIXES = [
@@ -63,13 +64,7 @@ EXPECTED_CLASSIFICATIONS = {
 
 
 def _load_build_snippets_module():
-    module_path = ROOT / "build-snippets.py"
-    spec = importlib.util.spec_from_file_location("build_snippets", module_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError("Unable to load build-snippets.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return _snippets_module
 
 
 def _entry(**overrides):

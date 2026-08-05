@@ -17,11 +17,15 @@ lint:
 
 [doc("Regenerate htmx.catalog.json from pinned upstream HTMX docs")]
 build-data:
-    uv run python build-data.py
+    uv run htmx-tools build-data
 
-[doc("Verify the pinned HTMX tags in build-data.py are still current upstream")]
+[doc("Validate and generate Django HTMX snippets and their documentation")]
+build-snippets:
+    uv run htmx-tools build-snippets
+
+[doc("Verify the pinned HTMX tags in htmx_tools/catalog.py are still current upstream")]
 check-pins:
-    uv run python scripts/check-htmx-pins.py
+    uv run htmx-tools check-pins
 
 [doc("Run all local checks")]
 check: lint test

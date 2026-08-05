@@ -38,7 +38,15 @@ async function main(): Promise<void> {
   writeFileSync(path.join(workspacePath, "include.html"), '{% include "shared/cards.html#card" %}\n');
   writeFileSync(
     path.join(workspacePath, "views.py"),
-    'response = render(request, "shared/cards.html#card")\n',
+    [
+      'render(request, "shared/cards.html#card")',
+      'django.shortcuts.render(request, template_name="shared/cards.html#card")',
+      'render_to_string(template_name="shared/cards.html#card")',
+      'get_template("shared/cards.html#card")',
+      'select_template(["shared/cards.html#card"])',
+      'TemplateResponse(request, template="shared/cards.html#card")',
+      "",
+    ].join("\n"),
   );
   try {
     await runTests({

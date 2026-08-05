@@ -25,6 +25,14 @@ def test_runtime_provider_manifest() -> None:
     assert "batisteo.vscode-django" in manifest["extensionDependencies"]
 
 
+def test_f5_launch_keeps_the_django_dependency_enabled() -> None:
+    launch = _read_json(ROOT / ".vscode" / "launch.json")
+    args = launch["configurations"][0]["args"]
+    assert "--disable-extensions" not in args
+    assert not any(argument.startswith("--install-extension") for argument in args)
+    assert "--extensionDevelopmentPath=${workspaceFolder}" in args
+
+
 def test_public_configuration_defaults() -> None:
     manifest = _read_json(ROOT / "package.json")
     settings = manifest["contributes"]["configuration"]["properties"]
@@ -59,6 +67,7 @@ def test_unbundled_build_output_is_excluded_from_vsix() -> None:
     ignored = (ROOT / ".vscodeignore").read_text(encoding="utf-8").splitlines()
     assert "out/**" in ignored
     assert "src/**" in ignored
+    assert "htmx_tools/**" in ignored
     assert "esbuild.js" in ignored
 
 

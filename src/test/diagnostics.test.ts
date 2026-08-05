@@ -20,6 +20,10 @@ test("unknown attributes and closed invalid values warn", () => {
   assert.deepEqual(issues.map((issue) => issue.code), ["unknown-attribute", "invalid-value"]);
 });
 
+test("incomplete attribute prefixes do not warn while typing", () => {
+  assert.deepEqual(analyzeDocument(`<div hx- data-hx->`, "html", catalog, "compatible"), []);
+});
+
 test("incomplete quoted values are not validated while typing", () => {
   assert.deepEqual(analyzeDocument(`<form hx-method="po></form>`, "html", catalog, "compatible"), []);
 });

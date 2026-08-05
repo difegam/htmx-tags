@@ -6,9 +6,7 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--disable-extensions",
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--install-extension=batisteo.vscode-django",
         "${workspaceFolder}/examples"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],

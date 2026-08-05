@@ -56,7 +56,7 @@ jobs:
                   git diff --exit-code -- htmx.catalog.json
 
             - name: Verify HTMX pins are current
-              run: uv run python scripts/check-htmx-pins.py
+              run: uv run htmx-tools check-pins
               env:
                   GITHUB_TOKEN: ${{ github.token }}
 

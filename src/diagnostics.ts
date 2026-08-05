@@ -29,6 +29,9 @@ export function analyzeDocument(
     if (!lowerName.startsWith("hx-") && !lowerName.startsWith("data-hx-")) {
       continue;
     }
+    if (lowerName === "hx-" || lowerName === "data-hx-") {
+      continue;
+    }
 
     const resolved = catalog.resolve(lowerName);
     if (resolved === undefined) {

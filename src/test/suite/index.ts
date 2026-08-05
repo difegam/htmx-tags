@@ -26,6 +26,16 @@ async function definitions(
   )) ?? [];
 }
 
+async function codeActions(document: vscode.TextDocument): Promise<vscode.CodeAction[]> {
+  const actions = await vscode.commands.executeCommand<(vscode.CodeAction | vscode.Command)[]>(
+    "vscode.executeCodeActionProvider",
+    document.uri,
+    new vscode.Range(new vscode.Position(0, 0), document.positionAt(document.getText().length)),
+    vscode.CodeActionKind.QuickFix.value,
+  );
+  return (actions ?? []).filter((action): action is vscode.CodeAction => "kind" in action);
+}
+
 function locationUri(location: vscode.Location | vscode.LocationLink): vscode.Uri {
   return location instanceof vscode.Location ? location.uri : location.targetUri;
 }
@@ -73,8 +83,16 @@ export async function run(): Promise<void> {
   assert.match(markdownOf(hxGet.documentation), /```html/);
   assert.match(markdownOf(hxGet.documentation), /HTMX 2: Core Attribute · HTMX 4: Requests Attribute/);
   assert.match(markdownOf(hxGet.documentation), /htmxTags\.copyExample/);
+  assert.equal((hxGet.insertText as vscode.SnippetString).value, 'hx-get="$0"');
   assert.equal(hxItems.items.some((item) => labelOf(item) === "data-hx-get"), false);
   assert.ok(hxItems.items.find((item) => labelOf(item) === "hx-vars")?.tags?.includes(vscode.CompletionItemTag.Deprecated));
+  assert.ok(hxItems.items.some((item) => labelOf(item) === "hx-on:<event>"));
+  assert.ok(hxItems.items.some((item) => labelOf(item) === "hx-target-<status>"));
+  assert.ok(hxItems.items.some((item) => labelOf(item) === "hx-status:<status>"));
+
+  const assignedHtml = await vscode.workspace.openTextDocument({ language: "html", content: '<div hx-g=""></div>' });
+  const assignedItems = await completions(assignedHtml, new vscode.Position(0, 9));
+  assert.equal(assignedItems.items.find((item) => labelOf(item) === "hx-get")?.insertText, "hx-get");
 
   const dataHtml = await vscode.workspace.openTextDocument({ language: "html", content: "<div data-hx" });
   const dataItems = await completions(dataHtml, new vscode.Position(0, 12));
@@ -182,6 +200,26 @@ export async function run(): Promise<void> {
   const localUse = localDefinitionDocument.getText().lastIndexOf("card");
   const localDefinitions = await definitions(localDefinitionDocument, localUse);
   assert.ok(localDefinitions.some((location) => locationUri(location).toString() === localDefinitionDocument.uri.toString()));
+  const partialHovers = await vscode.commands.executeCommand<vscode.Hover[]>(
+    "vscode.executeHoverProvider",
+    localDefinitionDocument.uri,
+    localDefinitionDocument.positionAt(localUse),
+  );
+  assert.match((partialHovers ?? []).flatMap((hover) => hover.contents).map(markdownOf).join("\n"), /Django partial `card`/);
+  const partialReferences = await vscode.commands.executeCommand<vscode.Location[]>(
+    "vscode.executeReferenceProvider",
+    localDefinitionDocument.uri,
+    localDefinitionDocument.positionAt(localUse),
+  );
+  assert.equal(partialReferences?.length, 2);
+  const rename = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
+    "vscode.executeDocumentRenameProvider",
+    localDefinitionDocument.uri,
+    localDefinitionDocument.positionAt(localUse),
+    "renamed-card",
+  );
+  assert.equal(rename?.entries().flatMap(([, edits]) => edits).length, 2);
+  assert.ok(rename?.entries().flatMap(([, edits]) => edits).every((edit) => edit.newText === "renamed-card"));
 
   const workspace = vscode.workspace.workspaceFolders?.[0];
   assert.ok(workspace, "test workspace is open");
@@ -197,11 +235,24 @@ export async function run(): Promise<void> {
   assert.equal(new Set(includeDefinitions.map((location) => locationUri(location).toString())).size, 2);
 
   const pythonDocument = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(workspace.uri, "views.py"));
-  const pythonPartial = pythonDocument.getText().indexOf("#card") + 1;
-  const pythonCompletions = await completions(pythonDocument, pythonDocument.positionAt(pythonPartial + 2));
-  assert.ok(pythonCompletions.items.some((item) => labelOf(item) === "card"));
-  const pythonDefinitions = await definitions(pythonDocument, pythonPartial);
-  assert.equal(new Set(pythonDefinitions.map((location) => locationUri(location).toString())).size, 2);
+  const pythonText = pythonDocument.getText();
+  for (let pythonPartial = pythonText.indexOf("#card"); pythonPartial >= 0; pythonPartial = pythonText.indexOf("#card", pythonPartial + 1)) {
+    const nameOffset = pythonPartial + 1;
+    const pythonCompletions = await completions(pythonDocument, pythonDocument.positionAt(nameOffset + 2));
+    assert.ok(pythonCompletions.items.some((item) => labelOf(item) === "card"));
+    const pythonDefinitions = await definitions(pythonDocument, nameOffset);
+    assert.equal(new Set(pythonDefinitions.map((location) => locationUri(location).toString())).size, 2);
+  }
+
+  const cardsUri = vscode.Uri.joinPath(workspace.uri, "apps/a/templates/shared/cards.html");
+  const cardsDocument = await vscode.workspace.openTextDocument(cardsUri);
+  const cardsEditor = await vscode.window.showTextDocument(cardsDocument);
+  const cardsEnd = cardsDocument.positionAt(cardsDocument.getText().length);
+  assert.ok(await cardsEditor.edit((edit) => edit.insert(cardsEnd, "{% partialdef fresh %}Fresh{% endpartialdef %}\n")));
+  assert.ok(await cardsDocument.save());
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  const refreshedCompletions = await completions(includeDocument, includeDocument.positionAt(includePartial + 2));
+  assert.ok(refreshedCompletions.items.some((item) => labelOf(item) === "fresh"));
 
   const missingDocument = await vscode.workspace.openTextDocument({
     language: "python",
@@ -209,8 +260,45 @@ export async function run(): Promise<void> {
   });
   assert.equal((await definitions(missingDocument, missingDocument.getText().indexOf("#card") + 1)).length, 0);
 
-  const invalid = await vscode.workspace.openTextDocument({ language: "html", content: '<div hx-nope="x">' });
+  await vscode.workspace.getConfiguration("htmxTags").update("version", "2", vscode.ConfigurationTarget.Global);
+  const invalid = await vscode.workspace.openTextDocument({
+    language: "django-html",
+    content: '{% partialdef card %}{% endpartialdef %}{% partial car %}\n<form hx-methd="post" data-hx-methd="post" hx-vars="a:1" hx-method="trace"></form>',
+  });
   await new Promise((resolve) => setTimeout(resolve, 200));
+  const invalidDiagnostics = vscode.languages.getDiagnostics(invalid.uri).filter((diagnostic) => diagnostic.source === "htmx-tags");
+  assert.ok(invalidDiagnostics.length >= 5);
+  const actionTitles = (await codeActions(invalid)).map((action) => action.title);
+  assert.ok(actionTitles.includes("Replace with 'hx-method'"));
+  assert.ok(actionTitles.includes("Replace with 'data-hx-method'"));
+  assert.ok(actionTitles.includes("Replace with 'hx-vals'"));
+  assert.ok(actionTitles.includes("Replace with 'card'"));
+  assert.ok(actionTitles.some((title) => title.startsWith("Create '{% partialdef car %}'")));
+  await vscode.workspace.getConfiguration("htmxTags").update("version", "compatible", vscode.ConfigurationTarget.Global);
+
+  const expressionDocument = await vscode.workspace.openTextDocument({
+    language: "django-html",
+    content: '<form hx-method="{{ request_method }}"></form>',
+  });
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.equal(vscode.languages.getDiagnostics(expressionDocument.uri).some((diagnostic) => diagnostic.source === "htmx-tags"), false);
+
+  await vscode.workspace.getConfiguration("htmxTags").update("enableCompletion", false, vscode.ConfigurationTarget.Global);
+  assert.equal((await completions(html, new vscode.Position(0, 7))).items.some((item) => labelOf(item) === "hx-get"), false);
+  await vscode.workspace.getConfiguration("htmxTags").update("enableCompletion", true, vscode.ConfigurationTarget.Global);
+  await vscode.workspace.getConfiguration("htmxTags").update("enableHover", false, vscode.ConfigurationTarget.Global);
+  const disabledHovers = await vscode.commands.executeCommand<vscode.Hover[]>(
+    "vscode.executeHoverProvider",
+    hoverDocument.uri,
+    new vscode.Position(0, 20),
+  );
+  assert.doesNotMatch((disabledHovers ?? []).flatMap((hover) => hover.contents).map(markdownOf).join("\n"), /HTMX 2 docs/);
+  await vscode.workspace.getConfiguration("htmxTags").update("enableHover", true, vscode.ConfigurationTarget.Global);
+  await vscode.workspace.getConfiguration("htmxTags").update("enableValidation", false, vscode.ConfigurationTarget.Global);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  assert.equal(vscode.languages.getDiagnostics(invalid.uri).some((diagnostic) => diagnostic.source === "htmx-tags"), false);
+  await vscode.workspace.getConfiguration("htmxTags").update("enableValidation", true, vscode.ConfigurationTarget.Global);
+  await new Promise((resolve) => setTimeout(resolve, 50));
   assert.ok(vscode.languages.getDiagnostics(invalid.uri).some((diagnostic) => diagnostic.source === "htmx-tags"));
 
   const snippetBytes = await vscode.workspace.fs.readFile(
@@ -218,6 +306,9 @@ export async function run(): Promise<void> {
   );
   const snippets = JSON.parse(new TextDecoder().decode(snippetBytes)) as Record<string, RuntimeSnippet>;
   assert.equal(Object.keys(snippets).length, 22);
+  const snippetsByPrefix = new Map(Object.values(snippets).map((snippet) => [snippet.prefix, snippet]));
+  assert.match(snippetsByPrefix.get("htmx-post")?.body.join("\n") ?? "", /\{% csrf_token %\}/);
+  assert.match(snippetsByPrefix.get("partialdef")?.body.join("\n") ?? "", /\{% partialdef /);
   const snippetDocument = await vscode.workspace.openTextDocument({ language: "django-html", content: "" });
   const snippetEditor = await vscode.window.showTextDocument(snippetDocument);
   for (const [name, snippet] of Object.entries(snippets)) {
