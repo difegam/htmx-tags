@@ -48,7 +48,6 @@ nav = [
 
 [project.theme]
 variant = "modern"
-name = "HTMX Tags for Django"
 logo = "assets/brand/icon.png"
 favicon = "assets/brand/icon.png"
 features = [
