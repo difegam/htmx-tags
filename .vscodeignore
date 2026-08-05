@@ -43,7 +43,7 @@ snippets/*.source.json
 pyproject.toml
 uv.lock
 ruff.toml
-prek.toml
+.pre-commit-config.yaml
 ty.toml
 zensical.toml
 Justfile

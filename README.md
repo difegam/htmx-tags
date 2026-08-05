@@ -10,8 +10,8 @@ diagnostics, and Django 6 partial support to HTML, Django templates, and Python 
 ## Install and use
 
 1. Open **Extensions** in VS Code (`Ctrl/Cmd+Shift+X`).
-2. Search for **HTMX Tags for Django** and install it.
-3. Open an `html` or `django-html` template and start typing `hx-`.
+1. Search for **HTMX Tags for Django** and install it.
+1. Open an `html` or `django-html` template and start typing `hx-`.
 
 Django template support uses the [Django extension](https://marketplace.visualstudio.com/items?itemName=batisteo.vscode-django), which VS Code installs as an extension dependency.
 
@@ -48,8 +48,8 @@ Django template support uses the [Django extension](https://marketplace.visualst
 
 ### Diagnostics and Django partials
 
-| Compatible diagnostics | Django partial completion |
-| --- | --- |
+| Compatible diagnostics                                 | Django partial completion                         |
+| ------------------------------------------------------ | ------------------------------------------------- |
 | ![HTMX and Django diagnostics](images/diagnostics.png) | ![Django partial completion](images/partials.png) |
 
 Every diagnostic ships a quick fix (the `Ctrl/Cmd+.` lightbulb): a misspelled `hx-` attribute suggests its nearest catalog name, a deprecated attribute offers its documented successor, an invalid documented value offers the allowed values, and an unknown partial offers a matching name or a `{% partialdef %}` stub.
@@ -84,12 +84,12 @@ The committed catalog covers HTMX `2.0.10` and `4.0.0-beta6`. `compatible` mode 
 
 ## Settings
 
-| Setting | Default | Purpose |
-| --- | --- | --- |
-| `htmxTags.enableCompletion` | `true` | Enable HTMX and Django partial completions. |
-| `htmxTags.enableHover` | `true` | Enable attribute and partial hover information. |
-| `htmxTags.enableValidation` | `true` | Enable HTMX and same-file partial diagnostics. |
-| `htmxTags.version` | `compatible` | Use `compatible`, `2`, or `4`. |
+| Setting                     | Default      | Purpose                                         |
+| --------------------------- | ------------ | ----------------------------------------------- |
+| `htmxTags.enableCompletion` | `true`       | Enable HTMX and Django partial completions.     |
+| `htmxTags.enableHover`      | `true`       | Enable attribute and partial hover information. |
+| `htmxTags.enableValidation` | `true`       | Enable HTMX and same-file partial diagnostics.  |
+| `htmxTags.version`          | `compatible` | Use `compatible`, `2`, or `4`.                  |
 
 ## Django snippets
 

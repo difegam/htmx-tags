@@ -21,7 +21,8 @@ After installing it, open a template and confirm that the language indicator in 
 Create or open an HTML file and place the cursor inside the element, right after `button`:
 
 ```html
-<button ></button>
+<button>
+</button>
 ```
 
 VS Code should offer HTMX attribute names. Select `hx-get`; the completion inserts an empty quoted value unless an assignment already exists. Hover a recognized `hx-*` attribute to see a concise description, version availability, and official HTMX documentation links.

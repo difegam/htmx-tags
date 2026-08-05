@@ -1,0 +1,84 @@
+minimum_prek_version: "0.3.8"
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+default_language_version:
+  python: "3.12"
+exclude: '^(\\.venv|out|dist|build)/'
+
+repos:
+  - repo: builtin
+    hooks:
+      - id: trailing-whitespace
+        name: trim trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        name: ensure newline at end of file
+      - id: check-json
+        name: validate JSON syntax
+      - id: check-yaml
+        name: validate YAML syntax
+      - id: check-toml
+        name: validate TOML syntax
+      - id: check-merge-conflict
+        name: check for merge conflicts
+      - id: check-case-conflict
+        name: check case conflicts
+      - id: mixed-line-ending
+        name: enforce LF line endings
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      - id: ruff-check
+        name: lint Python
+        args: [--fix, --config=./ruff.toml]
+      - id: ruff-format
+        name: format Python
+        args: [--config=./ruff.toml]
+
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        name: format Markdown
+        types: [markdown]
+        exclude: '^\.github/'
+        additional_dependencies:
+          - mdformat-gfm
+          - "mdformat-mkdocs[recommended]"
+
+  - repo: https://github.com/owenlamont/uv-secure
+    rev: 0.17.1
+    hooks:
+      - id: uv-secure
+        name: scan uv.lock for vulnerabilities
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        name: check for common misspellings
+        files: '\.(py|md|ya?ml|toml)$'
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        name: check shell scripts
+        args: [--severity=warning]
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: run tests
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        stages: [pre-push, manual]
+      - id: ty
+        name: type check Python
+        entry: uv run ty check
+        language: system
+        pass_filenames: false
+        require_serial: true

@@ -12,30 +12,30 @@ matching view and response examples.
 
 ## Prefixes
 
-| Prefix | Classification | Description |
-| --- | --- | --- |
-| `htmx-get` | Common | Django URL-backed HTMX GET button |
-| `htmx-post` | Common | CSRF-safe Django form submitted through HTMX |
-| `htmx-delete` | Common | CSRF-safe Django delete form submitted through POST |
-| `htmx-search` | Common | Debounced Django HTMX search input |
-| `htmx-form-validation` | Common | Django form replaced with server-rendered validation state |
-| `htmx-file-upload` | Curated recipe | CSRF-safe multipart file upload with a status target |
-| `htmx-bulk-actions` | Curated recipe | CSRF-safe bulk action form for Django objects |
-| `htmx-dependent-dropdown` | Curated recipe | Django select that loads options for a dependent field |
-| `htmx-infinite` | Common | Load the next Django page when revealed |
-| `htmx-poll` | Curated recipe | Poll a Django view until work is complete |
-| `htmx-lazy` | Common | Load a Django fragment when its placeholder appears |
-| `htmx-boost-nav` | Curated recipe | Progressively enhance Django navigation with history updates |
-| `htmx-progress` | Curated recipe | Poll server-rendered progress for a Django task |
-| `htmx-click-to-edit` | Common | Replace a Django object summary with an edit form |
-| `htmx-table-row` | Curated recipe | Replace a Django table row with server-rendered editing controls |
-| `htmx-dialog` | Curated recipe | Load a script-free non-modal dialog from a Django view |
-| `htmx-tabs` | Curated recipe | Replace server-rendered tabs and selected state |
-| `htmx-oob-swap` | Common | Update a second region from a Django HTMX response |
-| `htmx-toast` | Curated recipe | Append an accessible notification from an HTMX response |
-| `partialdef` | Django 6 | Define a Django 6 template partial |
-| `partialdef-inline` | Django 6 | Define and render an inline Django 6 template partial |
-| `partial` | Django 6 | Render a same-file Django 6 template partial |
+| Prefix                    | Classification | Description                                                      |
+| ------------------------- | -------------- | ---------------------------------------------------------------- |
+| `htmx-get`                | Common         | Django URL-backed HTMX GET button                                |
+| `htmx-post`               | Common         | CSRF-safe Django form submitted through HTMX                     |
+| `htmx-delete`             | Common         | CSRF-safe Django delete form submitted through POST              |
+| `htmx-search`             | Common         | Debounced Django HTMX search input                               |
+| `htmx-form-validation`    | Common         | Django form replaced with server-rendered validation state       |
+| `htmx-file-upload`        | Curated recipe | CSRF-safe multipart file upload with a status target             |
+| `htmx-bulk-actions`       | Curated recipe | CSRF-safe bulk action form for Django objects                    |
+| `htmx-dependent-dropdown` | Curated recipe | Django select that loads options for a dependent field           |
+| `htmx-infinite`           | Common         | Load the next Django page when revealed                          |
+| `htmx-poll`               | Curated recipe | Poll a Django view until work is complete                        |
+| `htmx-lazy`               | Common         | Load a Django fragment when its placeholder appears              |
+| `htmx-boost-nav`          | Curated recipe | Progressively enhance Django navigation with history updates     |
+| `htmx-progress`           | Curated recipe | Poll server-rendered progress for a Django task                  |
+| `htmx-click-to-edit`      | Common         | Replace a Django object summary with an edit form                |
+| `htmx-table-row`          | Curated recipe | Replace a Django table row with server-rendered editing controls |
+| `htmx-dialog`             | Curated recipe | Load a script-free non-modal dialog from a Django view           |
+| `htmx-tabs`               | Curated recipe | Replace server-rendered tabs and selected state                  |
+| `htmx-oob-swap`           | Common         | Update a second region from a Django HTMX response               |
+| `htmx-toast`              | Curated recipe | Append an accessible notification from an HTMX response          |
+| `partialdef`              | Django 6       | Define a Django 6 template partial                               |
+| `partialdef-inline`       | Django 6       | Define and render an inline Django 6 template partial            |
+| `partial`                 | Django 6       | Render a same-file Django 6 template partial                     |
 
 ## Requests and forms
 

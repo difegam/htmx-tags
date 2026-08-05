@@ -23,3 +23,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["htmx_tools"]
+
+[tool.uv]
+default-groups = ["dev"]
+exclude-newer = "P7D"
+exclude-newer-package = { zensical = false }

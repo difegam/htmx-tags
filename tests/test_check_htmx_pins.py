@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import httpx2
 import pytest
 
@@ -21,9 +23,7 @@ def test_fetch_tags_uses_github_token(monkeypatch: pytest.MonkeyPatch) -> None:
         captured_requests.append(request)
         return httpx2.Response(200, json=[{"name": "v2.0.10"}])
 
-    def fake_make_client(**kwargs: object) -> httpx2.Client:
-        headers = kwargs.pop("headers")
-        assert isinstance(headers, dict)
+    def fake_make_client(*, headers: dict[str, str], **kwargs: Any) -> httpx2.Client:
         captured_headers.append(headers)
         return httpx2.Client(transport=httpx2.MockTransport(handler), headers=headers, **kwargs)
 

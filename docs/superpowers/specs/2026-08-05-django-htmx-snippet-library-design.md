@@ -1,6 +1,6 @@
 # Django-first HTMX Examples and Snippets
 
-**Status:** Approved design  
+**Status:** Approved design\
 **Date:** 2026-08-05
 
 ## Summary
@@ -18,15 +18,15 @@ Create a dependency-free generated library of 22 secure Django/HTMX template pat
 
 Add `snippets/django-htmx.source.json` as the canonical source. It contains an ordered array of entries with exactly these required fields:
 
-| Field | Meaning |
-| --- | --- |
-| `name` | Unique human-readable VS Code snippet name. |
-| `prefix` | Unique completion prefix. Existing prefixes remain stable. |
-| `category` | One of the five documented catalog sections. |
-| `classification` | One of `common`, `curated`, or `django-6`. |
-| `description` | Concise text shown by VS Code and in documentation. |
-| `body` | Non-empty array of VS Code snippet lines. |
-| `usage` | One short explanation of the endpoint response or template context required. |
+| Field            | Meaning                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `name`           | Unique human-readable VS Code snippet name.                                  |
+| `prefix`         | Unique completion prefix. Existing prefixes remain stable.                   |
+| `category`       | One of the five documented catalog sections.                                 |
+| `classification` | One of `common`, `curated`, or `django-6`.                                   |
+| `description`    | Concise text shown by VS Code and in documentation.                          |
+| `body`           | Non-empty array of VS Code snippet lines.                                    |
+| `usage`          | One short explanation of the endpoint response or template context required. |
 
 Add a dependency-free Python generator at `build-snippets.py`. Normal mode validates the complete catalog in memory, then deterministically writes:
 
@@ -47,11 +47,11 @@ The source catalog, generator, tests, and documentation stay excluded from the V
 
 The generated library contains exactly these 22 prefixes:
 
-| Classification | Prefixes |
-| --- | --- |
-| Common | `htmx-get`, `htmx-post`, `htmx-delete`, `htmx-search`, `htmx-form-validation`, `htmx-infinite`, `htmx-lazy`, `htmx-click-to-edit`, `htmx-oob-swap` |
+| Classification | Prefixes                                                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Common         | `htmx-get`, `htmx-post`, `htmx-delete`, `htmx-search`, `htmx-form-validation`, `htmx-infinite`, `htmx-lazy`, `htmx-click-to-edit`, `htmx-oob-swap`                             |
 | Curated recipe | `htmx-file-upload`, `htmx-bulk-actions`, `htmx-dependent-dropdown`, `htmx-poll`, `htmx-boost-nav`, `htmx-progress`, `htmx-table-row`, `htmx-dialog`, `htmx-tabs`, `htmx-toast` |
-| Django 6 | `partialdef`, `partialdef-inline`, `partial` |
+| Django 6       | `partialdef`, `partialdef-inline`, `partial`                                                                                                                                   |
 
 All request URLs use `{% url %}` placeholders. The generated reference keeps each template body beside its endpoint contract. The Core Django guide supplies reusable view examples without adding a sample application, models, CSS framework, JavaScript framework, or Python dependency.
 
