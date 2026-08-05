@@ -39,7 +39,8 @@
   ],
   "activationEvents": [
     "onLanguage:html",
-    "onLanguage:django-html"
+    "onLanguage:django-html",
+    "onLanguage:python"
   ],
   "main": "./out/extension.js",
   "icon": "images/icon.png",

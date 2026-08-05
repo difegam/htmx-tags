@@ -1,6 +1,6 @@
 # HTMX Tags for Django
 
-Documentation for the VS Code extension that provides offline HTMX IntelliSense and same-file Django template partial support.
+Documentation for the VS Code extension that provides offline HTMX IntelliSense and Django 6 partial completion and navigation across templates and Python views.
 
 ![HTMX attribute completion in VS Code](assets/images/attribute-completions.gif)
 

@@ -23,11 +23,15 @@ import {
   partialAtOffset,
   scanDocument,
   tagAtOffset,
+  templatePartialReferenceAtOffset,
   type AttributeToken,
+  type PartialDefinition,
   type ScanResult,
 } from "./scanner.js";
 
 const DOCUMENT_SELECTOR: vscode.DocumentFilter[] = [{ language: "html" }, { language: "django-html" }];
+const PARTIAL_SELECTOR: vscode.DocumentFilter[] = [{ language: "django-html" }, { language: "python" }];
+const PYTHON_SELECTOR: vscode.DocumentFilter = { language: "python" };
 const DIAGNOSTIC_SOURCE = "htmx-tags";
 const COMPLETION_DOCUMENTATION = new WeakMap<vscode.CompletionItem, () => vscode.MarkdownString>();
 
@@ -180,6 +184,171 @@ function partialCompletionItems(
   });
 }
 
+function partialTagCompletionItems(
+  document: vscode.TextDocument,
+  offset: number,
+): vscode.CompletionItem[] | undefined {
+  const textBefore = document.getText().slice(0, offset);
+  const tagStart = textBefore.lastIndexOf("{%");
+  if (tagStart < textBefore.lastIndexOf("%}")) {
+    return undefined;
+  }
+  const active = textBefore.slice(tagStart);
+  const match = active.match(/^\{%\s*([A-Za-z]*)$/);
+  if (match === null) {
+    return undefined;
+  }
+  const prefix = match[1];
+  const range = new vscode.Range(document.positionAt(offset - prefix.length), document.positionAt(offset));
+  const leadingSpace = active === "{%" ? " " : "";
+  const completions = [
+    ["partialdef", "partialdef ${1:partial_name} %}\n  $0\n{% endpartialdef %}", "Define a Django partial"],
+    [
+      "partialdef … inline",
+      "partialdef ${1:partial_name} inline %}\n  $0\n{% endpartialdef %}",
+      "Define and render an inline Django partial",
+    ],
+    ["partial", "partial ${1:partial_name} %}", "Render a Django partial"],
+    ["endpartialdef", "endpartialdef %}", "Close a Django partial definition"],
+  ] as const;
+  return completions.map(([label, snippet, detail], index) => {
+    const item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Keyword);
+    item.detail = detail;
+    item.filterText = label.replace(" …", "");
+    item.insertText = new vscode.SnippetString(`${leadingSpace}${snippet}`);
+    item.range = range;
+    item.sortText = `0-${index}`;
+    return item;
+  });
+}
+
+interface ResolvedPartialDefinition {
+  document: vscode.TextDocument;
+  definition: PartialDefinition;
+  workspacePath: string;
+}
+
+function escapeGlobSegment(value: string): string {
+  return value.replace(/[?*\[\]{}]/g, (character) => {
+    if (character === "[") {
+      return "[[]";
+    }
+    if (character === "]") {
+      return "[]]";
+    }
+    return `[${character}]`;
+  });
+}
+
+async function resolveTemplatePartials(
+  templateName: string,
+  token: vscode.CancellationToken,
+): Promise<ResolvedPartialDefinition[]> {
+  const normalized = templateName.replace(/\\/g, "/").replace(/^(\.\/)+/, "");
+  const parts = normalized.split("/");
+  const basename = parts.at(-1);
+  if (basename === undefined || basename === "" || normalized.startsWith("/") || parts.includes("..")) {
+    return [];
+  }
+  const uris = await vscode.workspace.findFiles(`**/${escapeGlobSegment(basename)}`, undefined, undefined, token);
+  const suffix = `/${normalized}`;
+  const matches = uris
+    .filter((uri) => uri.path === normalized || uri.path.endsWith(suffix))
+    .sort((left, right) => left.toString().localeCompare(right.toString()));
+  const resolved: ResolvedPartialDefinition[] = [];
+  for (const uri of matches) {
+    if (token.isCancellationRequested) {
+      return [];
+    }
+    const document = await vscode.workspace.openTextDocument(uri);
+    const workspacePath = vscode.workspace.asRelativePath(uri, false);
+    for (const definition of scanDocument(document.getText()).partialDefinitions) {
+      resolved.push({ document, definition, workspacePath });
+    }
+  }
+  return resolved;
+}
+
+async function templatePartialCompletionItems(
+  document: vscode.TextDocument,
+  offset: number,
+  token: vscode.CancellationToken,
+): Promise<vscode.CompletionItem[] | undefined> {
+  if (document.languageId !== "django-html" && document.languageId !== "python") {
+    return undefined;
+  }
+  const reference = templatePartialReferenceAtOffset(document.getText(), document.languageId, offset);
+  if (reference === undefined) {
+    return undefined;
+  }
+  const definitions = await resolveTemplatePartials(reference.templateName, token);
+  const byName = new Map<string, ResolvedPartialDefinition[]>();
+  for (const definition of definitions) {
+    const matches = byName.get(definition.definition.name) ?? [];
+    matches.push(definition);
+    byName.set(definition.definition.name, matches);
+  }
+  const range = new vscode.Range(
+    document.positionAt(reference.nameStart),
+    document.positionAt(reference.nameEnd),
+  );
+  return [...byName.entries()].map(([name, matches]) => {
+    const paths = [...new Set(matches.map((match) => match.workspacePath))];
+    const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Reference);
+    item.detail = `Django partial${matches.some((match) => match.definition.inline) ? " · inline" : ""} · ${paths.join(", ")}`;
+    item.range = range;
+    item.sortText = `0-${name}`;
+    return item;
+  });
+}
+
+async function provideDefinitions(
+  document: vscode.TextDocument,
+  position: vscode.Position,
+  token: vscode.CancellationToken,
+): Promise<vscode.Location[] | undefined> {
+  const text = document.getText();
+  const offset = document.offsetAt(position);
+  if (document.languageId === "django-html") {
+    const scan = scanDocument(text);
+    const reference = scan.partialReferences.find(
+      (partial) => offset >= partial.nameStart && offset <= partial.nameEnd,
+    );
+    if (reference !== undefined) {
+      return scan.partialDefinitions
+        .filter((definition) => definition.name === reference.name)
+        .map(
+          (definition) =>
+            new vscode.Location(
+              document.uri,
+              new vscode.Range(document.positionAt(definition.nameStart), document.positionAt(definition.nameEnd)),
+            ),
+        );
+    }
+  }
+  if (document.languageId !== "django-html" && document.languageId !== "python") {
+    return undefined;
+  }
+  const reference = templatePartialReferenceAtOffset(text, document.languageId, offset);
+  if (reference === undefined || reference.name === "") {
+    return undefined;
+  }
+  const definitions = await resolveTemplatePartials(reference.templateName, token);
+  const locations = definitions
+    .filter((candidate) => candidate.definition.name === reference.name)
+    .map(
+      (candidate) =>
+        new vscode.Location(
+          candidate.document.uri,
+          new vscode.Range(
+            candidate.document.positionAt(candidate.definition.nameStart),
+            candidate.document.positionAt(candidate.definition.nameEnd),
+          ),
+        ),
+    );
+  return locations.length === 0 ? undefined : locations;
+}
+
 function valueCompletionItems(
   document: vscode.TextDocument,
   attribute: AttributeToken,
@@ -281,11 +450,12 @@ function valueCompletionItems(
   });
 }
 
-function provideCompletions(
+async function provideCompletions(
   catalog: CatalogIndex,
   document: vscode.TextDocument,
   position: vscode.Position,
-): vscode.CompletionItem[] | undefined {
+  token: vscode.CancellationToken,
+): Promise<vscode.CompletionItem[] | undefined> {
   if (!configuration(document).get("enableCompletion", true)) {
     return undefined;
   }
@@ -293,9 +463,17 @@ function provideCompletions(
   const offset = document.offsetAt(position);
   const scan = scanDocument(text);
   if (document.languageId === "django-html") {
+    const templatePartials = await templatePartialCompletionItems(document, offset, token);
+    if (templatePartials !== undefined) {
+      return templatePartials;
+    }
     const partials = partialCompletionItems(document, offset, scan);
     if (partials !== undefined) {
       return partials;
+    }
+    const tags = partialTagCompletionItems(document, offset);
+    if (tags !== undefined) {
+      return tags;
     }
   }
 
@@ -509,7 +687,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerCompletionItemProvider(
       DOCUMENT_SELECTOR,
       {
-        provideCompletionItems: (document, position) => provideCompletions(catalog, document, position),
+        provideCompletionItems: (document, position, token) => provideCompletions(catalog, document, position, token),
         resolveCompletionItem: (item) => {
           item.documentation = COMPLETION_DOCUMENTATION.get(item)?.();
           return item;
@@ -521,7 +699,23 @@ export function activate(context: vscode.ExtensionContext): void {
       "'",
       "%",
       " ",
+      "#",
     ),
+    vscode.languages.registerCompletionItemProvider(
+      PYTHON_SELECTOR,
+      {
+        provideCompletionItems: async (document, position, token) => {
+          if (!configuration(document).get("enableCompletion", true)) {
+            return undefined;
+          }
+          return templatePartialCompletionItems(document, document.offsetAt(position), token);
+        },
+      },
+      "#",
+    ),
+    vscode.languages.registerDefinitionProvider(PARTIAL_SELECTOR, {
+      provideDefinition: (document, position, token) => provideDefinitions(document, position, token),
+    }),
     vscode.languages.registerHoverProvider(DOCUMENT_SELECTOR, {
       provideHover: (document, position) => provideHover(catalog, document, position),
     }),

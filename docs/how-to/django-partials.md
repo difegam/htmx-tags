@@ -1,6 +1,6 @@
 # Django Partials
 
-Define, render, and validate Django 6 partials within a single `django-html` template.
+Define, render, complete, and navigate Django 6 partials in templates and Python views.
 
 ## Define a partial
 
@@ -26,7 +26,23 @@ The `partialdef` and `partialdef-inline` snippets insert these structures.
 {% partial result_card %}
 ```
 
-After `{% partial `, completion offers names defined in the current file. Hovering a definition or reference identifies its definition line and whether it is inline.
+After `{% partial `, completion offers names defined in the current file. Hovering a definition or reference identifies its definition line and whether it is inline. Go to Definition and Peek Definition jump from the reference to the matching `partialdef` block.
+
+Typing after `{%` also offers `partialdef`, `partialdef … inline`, `partial`, and `endpartialdef` tag completions.
+
+## Reference a partial in another template
+
+Completion after `#` reads definitions from matching workspace templates:
+
+```django
+{% include "results/cards.html#result_card" %}
+```
+
+The same completion and navigation work for static template arguments to `render`, `render_to_string`, `get_template`, `select_template`, and `TemplateResponse`, including qualified calls and documented keyword arguments:
+
+```python
+return render(request, "results/cards.html#result_card", context)
+```
 
 ## Diagnostics
 
@@ -34,6 +50,6 @@ The extension warns about duplicate `{% partialdef name %}` definitions and refe
 
 !!! note "Deliberate limit"
 
-    No workspace-wide index is built. A partial defined in another template, or referenced by Python code, is outside the extension's analysis scope.
+    No workspace-wide index or Django settings model is built. Files are matched by exact template-path suffix on demand, so duplicate paths produce multiple navigation targets. Dynamic template variables, concatenated strings, bytes, and Python f-strings are outside the extension's analysis scope.
 
 ![Django partial completion](../assets/images/partials.png)

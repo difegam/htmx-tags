@@ -15,6 +15,21 @@ async function completions(
   );
 }
 
+async function definitions(
+  document: vscode.TextDocument,
+  offset: number,
+): Promise<(vscode.Location | vscode.LocationLink)[]> {
+  return (await vscode.commands.executeCommand<(vscode.Location | vscode.LocationLink)[]>(
+    "vscode.executeDefinitionProvider",
+    document.uri,
+    document.positionAt(offset),
+  )) ?? [];
+}
+
+function locationUri(location: vscode.Location | vscode.LocationLink): vscode.Uri {
+  return location instanceof vscode.Location ? location.uri : location.targetUri;
+}
+
 function labelOf(item: vscode.CompletionItem): string {
   return typeof item.label === "string" ? item.label : item.label.label;
 }
@@ -123,6 +138,48 @@ export async function run(): Promise<void> {
   });
   const partialItems = await completions(django, new vscode.Position(1, 13));
   assert.ok(partialItems.items.some((item) => labelOf(item) === "card"));
+
+  const tagDocument = await vscode.workspace.openTextDocument({ language: "django-html", content: "{% par" });
+  const tagItems = await completions(tagDocument, tagDocument.positionAt(tagDocument.getText().length));
+  assert.ok(tagItems.items.some((item) => labelOf(item) === "partialdef"));
+  assert.ok(tagItems.items.some((item) => labelOf(item) === "partialdef … inline"));
+  assert.ok(tagItems.items.some((item) => labelOf(item) === "partial"));
+  assert.ok(tagItems.items.some((item) => labelOf(item) === "endpartialdef"));
+  assert.equal(tagItems.items.some((item) => labelOf(item) === "endpartial"), false);
+
+  const localDefinitionDocument = await vscode.workspace.openTextDocument({
+    language: "django-html",
+    content: "{% partialdef card inline %}Card{% endpartialdef %}\n{% partial card %}",
+  });
+  const localUse = localDefinitionDocument.getText().lastIndexOf("card");
+  const localDefinitions = await definitions(localDefinitionDocument, localUse);
+  assert.ok(localDefinitions.some((location) => locationUri(location).toString() === localDefinitionDocument.uri.toString()));
+
+  const workspace = vscode.workspace.workspaceFolders?.[0];
+  assert.ok(workspace, "test workspace is open");
+  let includeDocument = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(workspace.uri, "include.html"));
+  if (includeDocument.languageId !== "django-html") {
+    includeDocument = await vscode.languages.setTextDocumentLanguage(includeDocument, "django-html");
+  }
+  const includePartial = includeDocument.getText().indexOf("#card") + 1;
+  const includeCompletions = await completions(includeDocument, includeDocument.positionAt(includePartial + 2));
+  assert.ok(includeCompletions.items.some((item) => labelOf(item) === "card"));
+  assert.ok(includeCompletions.items.some((item) => labelOf(item) === "row"));
+  const includeDefinitions = await definitions(includeDocument, includePartial);
+  assert.equal(new Set(includeDefinitions.map((location) => locationUri(location).toString())).size, 2);
+
+  const pythonDocument = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(workspace.uri, "views.py"));
+  const pythonPartial = pythonDocument.getText().indexOf("#card") + 1;
+  const pythonCompletions = await completions(pythonDocument, pythonDocument.positionAt(pythonPartial + 2));
+  assert.ok(pythonCompletions.items.some((item) => labelOf(item) === "card"));
+  const pythonDefinitions = await definitions(pythonDocument, pythonPartial);
+  assert.equal(new Set(pythonDefinitions.map((location) => locationUri(location).toString())).size, 2);
+
+  const missingDocument = await vscode.workspace.openTextDocument({
+    language: "python",
+    content: 'render(request, "missing.html#card")',
+  });
+  assert.equal((await definitions(missingDocument, missingDocument.getText().indexOf("#card") + 1)).length, 0);
 
   const invalid = await vscode.workspace.openTextDocument({ language: "html", content: '<div hx-nope="x">' });
   await new Promise((resolve) => setTimeout(resolve, 200));

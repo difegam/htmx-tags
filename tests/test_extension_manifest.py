@@ -19,6 +19,7 @@ def test_runtime_provider_manifest() -> None:
     assert manifest["displayName"] == "HTMX Tags for Django"
     assert "onLanguage:html" in manifest["activationEvents"]
     assert "onLanguage:django-html" in manifest["activationEvents"]
+    assert "onLanguage:python" in manifest["activationEvents"]
     assert "batisteo.vscode-django" in manifest["extensionDependencies"]
 
 

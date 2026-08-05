@@ -3,7 +3,7 @@
 # HTMX Tags for Django
 
 Write HTMX faster in VS Code. HTMX Tags for Django adds completions, value suggestions, hover docs,
-diagnostics, and Django 6 same-file partial support to HTML and Django templates—entirely offline.
+diagnostics, and Django 6 partial support to HTML, Django templates, and Python views—entirely offline.
 
 [Install from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=difegam.htmx-tags-django)
 
@@ -21,7 +21,7 @@ Django template support uses the [Django extension](https://marketplace.visualst
 - Use the same help with `data-hx-*` aliases, `hx-on:*`, response targets, and HTMX 4 modifiers.
 - Hover for concise documentation, version availability, and official HTMX links.
 - Catch clear HTMX typos and invalid documented values without warning on ordinary HTML or Django expressions.
-- Complete, navigate, and validate Django 6 `{% partialdef %}` and `{% partial %}` tags in the current file.
+- Complete and navigate Django 6 partial tags locally or through static `template.html#partial` references.
 - Insert Django-ready GET, CSRF-safe POST, delete, search, infinite scroll, and partial snippets.
 
 ## Editor experience
@@ -62,7 +62,17 @@ Definitions in the current template are offered after `{% partial `:
 {% partial result_card %}
 ```
 
-Partial lookup stays in the current template. That keeps completion immediate and predictable; Python view references such as `template.html#result_card` are deliberately outside its scope.
+Go to Definition and Peek Definition jump from `{% partial result_card %}` to its local definition. Static cross-template references also complete and navigate from Django includes and common Python APIs:
+
+```django
+{% include "results.html#result_card" %}
+```
+
+```python
+return render(request, "results.html#result_card", context)
+```
+
+Cross-template lookup scans matching workspace files on demand. When multiple apps contain the same template path, VS Code shows every matching definition rather than guessing Django's runtime loader order.
 
 ## HTMX version support
 

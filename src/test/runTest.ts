@@ -1,5 +1,7 @@
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 
 import {
   downloadAndUnzipVSCode,
@@ -20,7 +22,34 @@ async function main(): Promise<void> {
   if (install.status !== 0) {
     throw new Error("Unable to install the Django extension into the VS Code test runtime");
   }
-  await runTests({ extensionDevelopmentPath, extensionTestsPath, vscodeExecutablePath });
+  const workspacePath = mkdtempSync(path.join(tmpdir(), "htmx-tags-test-"));
+  const templateA = path.join(workspacePath, "apps/a/templates/shared");
+  const templateB = path.join(workspacePath, "apps/b/templates/shared");
+  mkdirSync(templateA, { recursive: true });
+  mkdirSync(templateB, { recursive: true });
+  writeFileSync(
+    path.join(templateA, "cards.html"),
+    "{% partialdef card inline %}<article>A</article>{% endpartialdef %}\n{% partialdef row %}A{% endpartialdef %}\n",
+  );
+  writeFileSync(
+    path.join(templateB, "cards.html"),
+    "{% partialdef card %}<article>B</article>{% endpartialdef %}\n",
+  );
+  writeFileSync(path.join(workspacePath, "include.html"), '{% include "shared/cards.html#card" %}\n');
+  writeFileSync(
+    path.join(workspacePath, "views.py"),
+    'response = render(request, "shared/cards.html#card")\n',
+  );
+  try {
+    await runTests({
+      extensionDevelopmentPath,
+      extensionTestsPath,
+      vscodeExecutablePath,
+      launchArgs: [workspacePath],
+    });
+  } finally {
+    rmSync(workspacePath, { recursive: true, force: true });
+  }
 }
 
 void main().catch((error: unknown) => {

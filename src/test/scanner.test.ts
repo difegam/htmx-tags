@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { scanDocument, tagAtOffset } from "../scanner.js";
+import {
+  scanDocument,
+  scanTemplatePartialReferences,
+  tagAtOffset,
+  templatePartialReferenceAtOffset,
+} from "../scanner.js";
 
 test("scanner reads multiline HTMX attributes and Django expressions", () => {
   const scan = scanDocument(`<button\n  hx-get="{% url 'items' %}"\n  data-hx-target='#results'\n  hx-on::after-request="done()">Go</button>`);
@@ -48,4 +53,52 @@ test("scanner finds same-file Django partial definitions and references", () => 
     { name: "card", inline: true },
   ]);
   assert.deepEqual(scan.partialReferences.map(({ name }) => name), ["card"]);
+});
+
+test("scanner finds static Django include partial references", () => {
+  const text = `
+{% include "cards/item.html#result-card" with item=item %}
+{% include template_name %}
+{% comment %}{% include "hidden.html#hidden" %}{% endcomment %}`;
+  const references = scanTemplatePartialReferences(text, "django-html");
+  assert.deepEqual(
+    references.map(({ templateName, name }) => ({ templateName, name })),
+    [{ templateName: "cards/item.html", name: "result-card" }],
+  );
+  assert.equal(templatePartialReferenceAtOffset(text, "django-html", references[0].nameStart)?.name, "result-card");
+});
+
+test("scanner finds template partials in supported Python call arguments", () => {
+  const text = `
+render(request, "authors.html#card")
+django.shortcuts.render(request, template_name='authors.html#detail')
+loader.render_to_string(template_name="authors.html#row")
+loader.get_template(r"shared\\\\authors.html#summary")
+select_template(["authors.html#compact", "fallback.html#compact"])
+TemplateResponse(request, template="authors.html#page")`;
+  assert.deepEqual(
+    scanTemplatePartialReferences(text, "python").map(({ templateName, name }) => [templateName, name]),
+    [
+      ["authors.html", "card"],
+      ["authors.html", "detail"],
+      ["authors.html", "row"],
+      ["shared\\authors.html", "summary"],
+      ["authors.html", "compact"],
+      ["fallback.html", "compact"],
+      ["authors.html", "page"],
+    ],
+  );
+});
+
+test("scanner rejects dynamic, concatenated, commented, misplaced, and incomplete Python references", () => {
+  const text = `
+# render(request, "hidden.html#hidden")
+render("wrong-position.html#wrong", context)
+render(request, f"{template}.html#dynamic")
+render(request, b"bytes.html#bytes")
+render(request, "joined.html#" + name)
+render(request, "implicit.html#" "joined")
+render(request, "formatted.html#partial".format())
+render(request, "unterminated.html#partial)`;
+  assert.deepEqual(scanTemplatePartialReferences(text, "python"), []);
 });

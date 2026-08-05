@@ -40,6 +40,13 @@ export interface PartialReference {
   tagEnd: number;
 }
 
+export interface TemplatePartialReference {
+  templateName: string;
+  name: string;
+  nameStart: number;
+  nameEnd: number;
+}
+
 export interface ScanResult {
   tags: HtmlTag[];
   attributes: AttributeToken[];
@@ -238,6 +245,235 @@ function scanPartials(text: string): Pick<ScanResult, "partialDefinitions" | "pa
     }
   }
   return { partialDefinitions, partialReferences };
+}
+
+function scanDjangoTemplatePartials(text: string): TemplatePartialReference[] {
+  const visible = maskIgnoredDjangoRegions(text);
+  const references: TemplatePartialReference[] = [];
+  const pattern = /\{%\s*include\s+(["'])([^\r\n"'#]+)#([^\s\r\n"'#%}]*)\1(?=[\s%])/g;
+  for (const match of visible.matchAll(pattern)) {
+    if (match.index === undefined) {
+      continue;
+    }
+    const quoteStart = match.index + match[0].indexOf(match[1]);
+    const templateNameStart = quoteStart + 1;
+    const nameStart = templateNameStart + match[2].length + 1;
+    references.push({
+      templateName: match[2],
+      name: match[3],
+      nameStart,
+      nameEnd: nameStart + match[3].length,
+    });
+  }
+  return references;
+}
+
+interface PythonToken {
+  type: "identifier" | "punctuation" | "string";
+  value: string;
+  start: number;
+  contentStart?: number;
+  closed?: boolean;
+  staticString?: boolean;
+}
+
+function pythonTokens(text: string): PythonToken[] {
+  const tokens: PythonToken[] = [];
+  let cursor = 0;
+  while (cursor < text.length) {
+    if (/\s/.test(text[cursor] ?? "")) {
+      cursor++;
+      continue;
+    }
+    if (text[cursor] === "#") {
+      cursor = text.indexOf("\n", cursor);
+      if (cursor === -1) {
+        break;
+      }
+      continue;
+    }
+
+    const tokenStart = cursor;
+    let prefix = "";
+    if (/[A-Za-z_]/.test(text[cursor] ?? "")) {
+      while (/[A-Za-z0-9_]/.test(text[cursor] ?? "")) {
+        cursor++;
+      }
+      prefix = text.slice(tokenStart, cursor);
+      if (text[cursor] !== "\"" && text[cursor] !== "'") {
+        tokens.push({ type: "identifier", value: prefix, start: tokenStart });
+        continue;
+      }
+    }
+
+    if (text[cursor] === "\"" || text[cursor] === "'") {
+      const quote = text[cursor];
+      const quoteLength = text.startsWith(quote.repeat(3), cursor) ? 3 : 1;
+      const contentStart = cursor + quoteLength;
+      cursor = contentStart;
+      while (cursor < text.length) {
+        if (text[cursor] === "\\") {
+          cursor += 2;
+          continue;
+        }
+        if (text.startsWith(quote.repeat(quoteLength), cursor)) {
+          const contentEnd = cursor;
+          cursor += quoteLength;
+          tokens.push({
+            type: "string",
+            value: text.slice(contentStart, contentEnd),
+            start: tokenStart,
+            contentStart,
+            closed: true,
+            staticString: prefix === "" || /^[ru]$/i.test(prefix),
+          });
+          break;
+        }
+        cursor++;
+      }
+      if (tokens.at(-1)?.start !== tokenStart) {
+        tokens.push({
+          type: "string",
+          value: text.slice(contentStart),
+          start: tokenStart,
+          contentStart,
+          closed: false,
+          staticString: false,
+        });
+      }
+      continue;
+    }
+
+    tokens.push({ type: "punctuation", value: text[cursor], start: cursor });
+    cursor++;
+  }
+  return tokens;
+}
+
+interface PythonCallFrame {
+  name?: string;
+  argument: number;
+  possibleKeyword?: string;
+  keyword?: string;
+  delimiter: "(" | "[" | "{";
+}
+
+const PYTHON_TEMPLATE_ARGUMENTS: Readonly<Record<string, { position: number; keyword: string }>> = {
+  render: { position: 1, keyword: "template_name" },
+  render_to_string: { position: 0, keyword: "template_name" },
+  get_template: { position: 0, keyword: "template_name" },
+  select_template: { position: 0, keyword: "template_name_list" },
+  TemplateResponse: { position: 1, keyword: "template" },
+};
+
+function templateReferenceFromString(token: PythonToken): TemplatePartialReference | undefined {
+  if (token.type !== "string" || token.closed !== true || token.staticString !== true || token.contentStart === undefined) {
+    return undefined;
+  }
+  const hash = token.value.indexOf("#");
+  if (hash <= 0) {
+    return undefined;
+  }
+  const name = token.value.slice(hash + 1);
+  if (/\s|["'#]/.test(name)) {
+    return undefined;
+  }
+  const nameStart = token.contentStart + hash + 1;
+  return {
+    templateName: token.value.slice(0, hash).replace(/\\([\\"'])/g, "$1"),
+    name,
+    nameStart,
+    nameEnd: nameStart + name.length,
+  };
+}
+
+function scanPythonTemplatePartials(text: string): TemplatePartialReference[] {
+  const tokens = pythonTokens(text);
+  const references: TemplatePartialReference[] = [];
+  const stack: PythonCallFrame[] = [];
+
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const top = stack.at(-1);
+    if (token.type === "identifier" && top?.delimiter === "(") {
+      top.possibleKeyword = token.value;
+    }
+    if (token.type === "punctuation") {
+      if (token.value === "(" || token.value === "[" || token.value === "{") {
+        const previous = tokens[index - 1];
+        stack.push({
+          name: token.value === "(" && previous?.type === "identifier" ? previous.value : undefined,
+          argument: 0,
+          delimiter: token.value,
+        });
+        continue;
+      }
+      if (token.value === ")" || token.value === "]" || token.value === "}") {
+        stack.pop();
+        continue;
+      }
+      if (top?.delimiter === "(" && token.value === ",") {
+        top.argument++;
+        top.possibleKeyword = undefined;
+        top.keyword = undefined;
+        continue;
+      }
+      if (top?.delimiter === "(" && token.value === "=" && top.possibleKeyword !== undefined) {
+        top.keyword = top.possibleKeyword;
+      }
+      continue;
+    }
+    if (token.type !== "string") {
+      continue;
+    }
+
+    const previous = tokens[index - 1]?.value;
+    const next = tokens[index + 1]?.value;
+    if (!["(", "[", ",", "="].includes(previous ?? "") || ![")", "]", ","].includes(next ?? "")) {
+      continue;
+    }
+    let callIndex = -1;
+    for (let stackIndex = stack.length - 1; stackIndex >= 0; stackIndex--) {
+      const name = stack[stackIndex].name;
+      if (name !== undefined && name in PYTHON_TEMPLATE_ARGUMENTS) {
+        callIndex = stackIndex;
+        break;
+      }
+    }
+    if (callIndex === -1) {
+      continue;
+    }
+    const call = stack[callIndex];
+    const expected = PYTHON_TEMPLATE_ARGUMENTS[call.name!];
+    if (call.argument !== expected.position && call.keyword !== expected.keyword) {
+      continue;
+    }
+    if (stack.slice(callIndex + 1).some((frame) => frame.name !== undefined || frame.delimiter === "{")) {
+      continue;
+    }
+    const reference = templateReferenceFromString(token);
+    if (reference !== undefined) {
+      references.push(reference);
+    }
+  }
+  return references;
+}
+
+export function scanTemplatePartialReferences(
+  text: string,
+  languageId: "django-html" | "python",
+): TemplatePartialReference[] {
+  return languageId === "python" ? scanPythonTemplatePartials(text) : scanDjangoTemplatePartials(text);
+}
+
+export function templatePartialReferenceAtOffset(
+  text: string,
+  languageId: "django-html" | "python",
+  offset: number,
+): TemplatePartialReference | undefined {
+  return scanTemplatePartialReferences(text, languageId).find(
+    (reference) => offset >= reference.nameStart && offset <= reference.nameEnd,
+  );
 }
 
 export function scanDocument(text: string): ScanResult {

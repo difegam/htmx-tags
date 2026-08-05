@@ -37,4 +37,4 @@ The extension completes `hx-*` attributes and documented values such as `innerHT
 
 !!! note "Same-file scope"
 
-    Django partial lookup deliberately does not inspect other templates or Python references such as `template.html#result_card`.
+    Cross-template references such as `template.html#result_card` are resolved from matching workspace files on demand; Django loader order is not modeled.
