@@ -1,15 +1,19 @@
 line-length = 100
 indent-width = 4
 target-version = "py312"
+force-exclude = true
 extend-exclude = [".venv", ".vscode-test", "logs", "__pycache__", "build", "dist"]
 
 [lint]
-select = ["E", "F", "I", "UP", "B", "PTH"]
+select = ["E", "F", "I", "UP", "B", "PTH", "C4", "PERF", "RUF", "S"]
 fixable = ["ALL"]
 
 [format]
 quote-style = "double"
 indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
 
 [lint.per-file-ignores]
 "htmx_tools/catalog.py" = ["E501"]
+"tests/*" = ["S101"]

@@ -559,7 +559,7 @@ def parse_document(markdown: str) -> tuple[dict[str, str], str]:
             if isinstance((value := parsed.get(key)), str)
         }
     else:
-        metadata = {key: value for key, value in _YAML_METADATA_PATTERN.findall(header)}
+        metadata = dict(_YAML_METADATA_PATTERN.findall(header))
     return metadata, markdown[match.end() :].strip()
 
 
@@ -713,7 +713,7 @@ def build_catalog(v2_version: str, v4_version: str) -> dict[str, Any]:
         if name in DEPRECATED:
             entry["deprecated"] = DEPRECATED[name]
         if name in CURATED_EXAMPLES:
-            entry["examples"] = {major: CURATED_EXAMPLES[name] for major in entry["versions"]}
+            entry["examples"] = dict.fromkeys(entry["versions"], CURATED_EXAMPLES[name])
         elif not entry["examples"]:
             del entry["examples"]
 
